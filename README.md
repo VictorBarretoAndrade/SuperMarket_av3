@@ -1,0 +1,95 @@
+# Supermarket Receipt: modernização de sistema legado
+
+Trabalho prático de **Alta Qualidade de Software**: modernização incremental do
+[SupermarketReceipt-Refactoring-Kata](https://github.com/emilybache/SupermarketReceipt-Refactoring-Kata)
+(versão `python_pytest`, branch `main`).
+
+O trabalho tem quatro frentes:
+- testes de caracterização;
+- refatoração com padrões de projeto (Strategy e Factory Method);
+- nova regra de **combos promocionais** (10% sobre os combos completos);
+- auditoria de segurança com Bandit, pip-audit e Safety, antes e depois.
+
+> O código legado original está na tag **`v0-legado`**. Toda comparação "antes/depois" usa essa tag.
+
+## Estrutura
+
+```
+.
+├── src/                     código da aplicação (legado + refatorado)
+│   └── discount_strategy.py contrato comum das promoções (commit zero)
+├── tests/
+│   ├── conftest.py                  fixtures compartilhadas
+│   ├── test_supermarket.py          teste original do kata
+│   ├── test_comportamento_legado.py testes de caracterização
+│   └── test_combos.py               testes de aceitação dos combos
+├── scripts/security_audit.py        roda Bandit, pip-audit e Safety e salva as evidências
+├── docs/
+│   ├── divisao_tarefas.md           divisão do time e decisões D1–D7
+│   ├── diagnostico_tecnico.md
+│   ├── requisitos.md
+│   ├── plano_contingencia.md
+│   ├── padroes_projeto.md
+│   ├── seguranca_antes_depois.md
+│   ├── evidencias_testes.md
+│   ├── evidencias/                  logs brutos (testes e segurança)
+│   └── legado/README_original.md
+└── apresentacao/                    slides.pdf
+```
+
+Os documentos são escritos em Markdown e exportados para PDF na entrega final.
+
+## Ambiente
+
+- Python 3.10 ou mais recente (desenvolvido e testado com 3.14)
+- Windows, Linux ou macOS
+
+```bash
+python -m venv .venv
+# Windows
+.venv\Scripts\activate
+# Linux/macOS
+source .venv/bin/activate
+
+python -m pip install -r requirements.txt       # aplicação + testes
+python -m pip install -r requirements-dev.txt   # ferramentas de segurança
+```
+
+## Testes
+
+```bash
+python -m pytest                     # todos os testes
+python -m pytest -v tests/test_combos.py
+python -m coverage run -m pytest && python -m coverage report
+```
+
+Enquanto os combos não estiverem implementados, `test_combos.py` aparece como `xfail` (é o esperado).
+
+Para rodar os testes de caracterização no código legado:
+
+```bash
+git checkout v0-legado -- src && python -m pytest tests/test_comportamento_legado.py
+git checkout HEAD -- src
+```
+
+## Segurança
+
+```bash
+python scripts/security_audit.py antes    # ou: depois
+```
+
+As saídas ficam em `docs/evidencias/seguranca/<etapa>/`. O `safety scan` exige uma conta Safety. Sem login, o script registra essa limitação e tenta o modo legado `safety check`. A análise está em [docs/seguranca_antes_depois.md](docs/seguranca_antes_depois.md).
+
+## Como o time trabalha
+
+Divisão de tarefas, quem é dono de cada arquivo, ordem de merge e decisões de negócio: [docs/divisao_tarefas.md](docs/divisao_tarefas.md).
+
+Commits pequenos, em inglês, no formato `tipo: descrição` (`feat`, `fix`, `docs`, `test`, `build`, `refactor`, `chore`, `security`, ...).
+
+## Decisões arquiteturais
+
+_A completar pelo time (P3/P1): resumo dos padrões aplicados, com link para [docs/padroes_projeto.md](docs/padroes_projeto.md)._
+
+## Licença
+
+Código-base: MIT, © 2018 Emily Bache (ver [license.txt](license.txt)).
