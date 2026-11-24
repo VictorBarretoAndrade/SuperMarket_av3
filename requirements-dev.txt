@@ -1,0 +1,5 @@
+# Ferramentas de auditoria de segurança (não fazem parte da aplicação).
+# Ficam separadas de requirements.txt para não "poluir" o escopo auditado.
+bandit
+pip-audit
+safety
