@@ -80,6 +80,16 @@ python scripts/security_audit.py antes    # ou: depois
 
 As saídas ficam em `docs/evidencias/seguranca/<etapa>/`. O `safety scan` exige uma conta Safety. Sem login, o script registra essa limitação e tenta o modo legado `safety check`. A análise está em [docs/seguranca_antes_depois.md](docs/seguranca_antes_depois.md).
 
+## Análise do legado
+
+Documentos da análise feita antes de qualquer mudança no código (base: tag `v0-legado`):
+
+- [Diagnóstico técnico](docs/diagnostico_tecnico.md): 15 problemas com arquivo e linha, métricas (radon e coverage) e prioridades.
+- [Requisitos](docs/requisitos.md): RF01–RF12 e RNF01–RNF07, com critérios de aceitação e matriz de rastreabilidade.
+- [Plano de contingência](docs/plano_contingencia.md): sequência das etapas, invariantes, riscos e estratégia de reversão.
+
+Resumo: toda a regra de promoções está em `ShoppingCart.handle_offers` (complexidade ciclomática 13), que no legado não era executada por nenhum teste (cobertura de 41% em `shopping_cart.py`). Por isso a ordem é: caracterizar, refatorar, estender (combos) e só então corrigir o bug do `TWO_FOR_AMOUNT`.
+
 ## Como o time trabalha
 
 Divisão de tarefas, quem é dono de cada arquivo, ordem de merge e decisões de negócio: [docs/divisao_tarefas.md](docs/divisao_tarefas.md).
