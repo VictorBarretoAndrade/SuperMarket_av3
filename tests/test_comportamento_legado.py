@@ -15,11 +15,13 @@ Cenários a cobrir (checklist do Passo 6 / item 5.7 do enunciado):
   [x] oferta para produto que não está no carrinho
   [x] duas ofertas para o mesmo produto (a última sobrescreve)
   [x] várias ofertas em produtos diferentes no mesmo carrinho
-  [ ] recibo impresso completo (ReceiptPrinter + approvaltests)
+  [x] recibo impresso completo (ReceiptPrinter + approvaltests)
 """
 import pytest
+from approvaltests import verify
 
 from model_objects import SpecialOfferType
+from tests.receipt_printer import ReceiptPrinter
 
 
 def test_empty_cart_produces_empty_receipt(teller, cart):
@@ -223,3 +225,23 @@ def test_multiple_offers_on_different_products_in_same_cart(
     assert len(receipt.discounts) == 4
     expected_total = 1.98 + 7.49 + (2.0 * 1.99 * 0.9) + 0.99 + 2.49
     assert receipt.total_price() == pytest.approx(expected_total)
+
+
+def test_printed_receipt_matches_approved_output(
+        teller, cart, toothbrush, toothpaste, apples, rice, cherry_tomatoes):
+    teller.add_special_offer(SpecialOfferType.THREE_FOR_TWO, toothbrush, 0)
+    teller.add_special_offer(SpecialOfferType.FIVE_FOR_AMOUNT, toothpaste, 7.49)
+    teller.add_special_offer(SpecialOfferType.TEN_PERCENT_DISCOUNT, apples, 10.0)
+    teller.add_special_offer(
+        SpecialOfferType.TWO_FOR_AMOUNT, cherry_tomatoes, 0.99)
+
+    cart.add_item_quantity(toothbrush, 3)
+    cart.add_item_quantity(toothpaste, 5)
+    cart.add_item_quantity(apples, 2.5)
+    cart.add_item_quantity(cherry_tomatoes, 2)
+    cart.add_item(rice)
+
+    receipt = teller.checks_out_articles_from(cart)
+    printed = ReceiptPrinter().print_receipt(receipt)
+
+    verify(printed)
