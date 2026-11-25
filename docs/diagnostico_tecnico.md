@@ -58,7 +58,50 @@ Pontos que chamam atenção logo de início:
 | 14 | geral | Nenhum type hint e nenhuma docstring no legado (0% de comentários, ver seção 3) | Legibilidade | Contratos só são descobertos lendo a implementação |
 | 15 | `tests/` | Só 1 teste no legado, que não aplica nenhuma oferta | Baixa cobertura | `handle_offers` com 41% de cobertura: refatorar sem rede de segurança. Relação: RNF01, RNF05, risco R1 |
 
-## 3. Métricas (opcional)
-<!-- ex.: complexidade ciclomática com radon, cobertura inicial -->
+## 3. Métricas
+
+Coletadas com `radon` (instalado à parte: `python -m pip install radon`) e `coverage` (Python 3.12) sobre a tag `v0-legado`:
+
+```bash
+python -m radon cc -s -a src tests/receipt_printer.py
+python -m radon mi -s src
+python -m coverage run --source=src -m pytest && python -m coverage report -m
+```
+
+**Complexidade ciclomática (radon cc)**
+
+| Bloco | CC | Rank |
+|-------|----|------|
+| `ShoppingCart.handle_offers` | 13 | C |
+| `ShoppingCart` (classe) | 4 | A |
+| `Receipt.total_price` | 3 | A |
+| `ReceiptPrinter.print_receipt` | 3 | A |
+| Média do projeto (45 blocos) | 1,76 | A |
+
+O único bloco fora do rank A é `handle_offers`, o que confirma o problema #1 como ponto central da refatoração.
+
+**Índice de manutenibilidade (radon mi)**
+
+| Arquivo | MI |
+|---------|----|
+| `shopping_cart.py` | 39,87 |
+| `receipt.py` | 59,20 |
+| `teller.py` | 65,61 |
+| `catalog.py`, `model_objects.py` | 100,00 |
+
+**Tamanho (radon raw):** 137 SLOC em `src/`, 0% de linhas de comentário.
+
+**Cobertura inicial (coverage, só `test_supermarket.py`)**
+
+| Arquivo | Statements | Cobertura | Linhas sem teste |
+|---------|-----------:|----------:|------------------|
+| `shopping_cart.py` | 49 | 41% | 17, 21, 26, 34-68 |
+| `model_objects.py` | 27 | 89% | 36-38 |
+| `receipt.py` | 27 | 93% | 20, 27 |
+| `teller.py` | 21 | 95% | 29 |
+| `catalog.py` | 5 | 60% | 5, 8 |
+| **Total** | **129** | **71%** | |
+
+Ou seja: **nenhuma linha de cálculo de desconto (34-68) é executada pelos testes do legado.**
 
 ## 4. Conclusão
