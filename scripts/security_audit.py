@@ -70,7 +70,9 @@ def main():
     (out_dir / "ambiente.txt").write_text("\n".join(env_lines) + "\n", encoding="utf-8")
 
     save(out_dir, "bandit.txt", [PY, "-m", "bandit", "-r", "src"])
-    save(out_dir, "bandit.json", [PY, "-m", "bandit", "-r", "src", "-f", "json"])
+    bandit_json = out_dir / "bandit.json"
+    code, _ = run([PY, "-m", "bandit", "-r", "src", "-f", "json", "-o", str(bandit_json)])
+    print(f"  {'bandit.json':<14} exit={code}")
     save(out_dir, "pip-audit.txt",
          [PY, "-m", "pip_audit", "-r", "requirements.txt", "--desc"])
 

@@ -1,0 +1,31 @@
+$ D:\GitHub\SuperMarket_av3\.venv\Scripts\python.exe -m safety scan
+# exit code: 0
+
+Safety 3.8.1 scanning D:\GitHub\SuperMarket_av3
+2026-11-25 20:21:48 UTC
+
+Account: rafael.rodrigues@aln.senaicimatec.edu.br 
+ Git branch: feat/combos
+ Environment: Stage.development
+ Scan policy: None, using Safety CLI default policies
+
+Python detected. Found 1 Python requirement file, 1 Python environment and 2 
+Python pyproject.toml files
+
++ requirements.txt: No issues found.
+
++ .venv\pyvenv.cfg: No issues found.
+
++ .venv\Lib\site-packages\stevedore\example2\pyproject.toml: No issues found.
+
++ .venv\Lib\site-packages\stevedore\example\pyproject.toml: No issues found.
+
+Tested 85 dependencies for security issues using default Safety CLI policies
+26 vulnerabilities found, 26 ignored due to policy.
+0 fixes suggested, resolving 0 vulnerabilities.
+
+D:\GitHub\SuperMarket_av3\.venv\Lib\site-packages\safety\auth\main.py:5: AuthlibDeprecationWarning: authlib.jose module is deprecated, please use joserfc instead.
+It will be compatible before version 2.0.0.
+  from authlib.jose.errors import ExpiredTokenError
+D:\GitHub\SuperMarket_av3\.venv\Lib\site-packages\authlib\integrations\httpx_client\assertion_client.py:5: AuthlibDeprecationWarning: The httpx module is deprecated; please use httpx2 instead.
+  from ._compat import httpx2

@@ -1,0 +1,4 @@
+$ D:\GitHub\SuperMarket_av3\.venv\Scripts\python.exe -m pip_audit -r requirements.txt --desc
+# exit code: 0
+
+No known vulnerabilities found
