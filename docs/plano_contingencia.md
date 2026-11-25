@@ -63,6 +63,27 @@ A nova API do combo (`teller.add_combo_offer(products, percent=10.0)`, D4) é **
 | R9 | Atraso de um integrante bloqueia a entrega | Média | Alto | Trabalho paralelo desde o início (seção 2 de `divisao_tarefas.md`); só o merge tem ordem | — | Outro integrante assume a etapa a partir da branch publicada |
 
 ## 4. Estratégia de reversão
-<!-- tag v0-legado, uma branch por mudança, git revert, nada de push --force -->
+
+1. **Ponto de comparação fixo:** a tag `v0-legado` marca o código original. Qualquer suíte pode ser rodada contra ela:
+
+   ```bash
+   git checkout v0-legado -- src && python -m pytest tests/test_comportamento_legado.py
+   git checkout HEAD -- src
+   ```
+
+2. **Uma branch por mudança** (`docs/analise`, `test/caracterizacao`, `refactor/strategy`, `feat/combos`). Nada é commitado direto no `main`.
+3. **Commits pequenos e atômicos:** cada commit compila e passa nos testes, então qualquer um pode ser revertido sozinho.
+4. **Regressão detectada no `main`:** `git revert <commit>` (ou `git revert -m 1 <merge>` para um merge), com mensagem explicando o motivo. **Nunca** `git push --force` nem `git reset` em branch compartilhada.
+5. **Regressão detectada antes do merge:** corrigir na própria branch com novo commit; o merge só acontece com a suíte verde.
+6. **Bug encontrado durante a refatoração:** não corrigir no mesmo commit. Caracterizar com teste, registrar no diagnóstico e corrigir depois em commit `fix:` separado (D6).
 
 ## 5. Critérios de aceitação de cada etapa
+
+| Etapa | Critério para entrar no `main` |
+|-------|-------------------------------|
+| E1 | Diagnóstico, requisitos e plano preenchidos e revisados pelo time; evidências de segurança "antes" geradas em `docs/evidencias/seguranca/antes/` |
+| E2 | Todos os cenários do checklist de `test_comportamento_legado.py` cobertos; suíte passa na tag `v0-legado`; cobertura das linhas 34-68 de `shopping_cart.py` em 100% |
+| E3 | Mesma suíte de E2 passa **sem alteração**; nenhum `if` por tipo de oferta em `handle_offers`; `radon cc src` sem método acima de 10 (RNF06) |
+| E4 | `test_combos.py` passa sem `xfail`; E2 continua verde; o diff não altera estratégias existentes (RNF02) |
+| E5 | Teste do bug atualizado no mesmo commit `fix:` (3 unidades -> 1,68); justificativa registrada em `docs/`; demais testes inalterados |
+| E6 | Bandit sem achado `High` e dependências sem vulnerabilidade não triada (RNF03); cobertura de `src/` ≥ 90% (RNF05); README permite rodar do zero (RNF04); slides em `apresentacao/` |
