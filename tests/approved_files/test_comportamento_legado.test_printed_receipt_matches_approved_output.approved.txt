@@ -1,0 +1,15 @@
+toothbrush                          2.97
+  0.99 * 3
+toothpaste                          8.95
+  1.79 * 5
+apples                              4.97
+  1.99 * 2.500
+cherry tomato box                   1.38
+  0.69 * 2
+rice                                2.49
+3 for 2 (toothbrush)               -0.99
+5 for 7.49 (toothpaste)            -1.46
+10.0% off (apples)                 -0.50
+2 for 0.99 (cherry tomato box)     -0.39
+
+Total:                             17.43

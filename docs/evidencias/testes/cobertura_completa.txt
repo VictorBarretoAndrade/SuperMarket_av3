@@ -1,0 +1,16 @@
+﻿Name                                 Stmts   Miss  Cover
+--------------------------------------------------------
+src\catalog.py                           5      2    60%
+src\model_objects.py                    27      0   100%
+src\receipt.py                          27      0   100%
+src\shopping_cart.py                    49      1    98%
+src\teller.py                           21      1    95%
+tests\__init__.py                        0      0   100%
+tests\conftest.py                       35      0   100%
+tests\fake_catalog.py                   10      0   100%
+tests\receipt_printer.py                44      0   100%
+tests\test_combos.py                    40     25    38%
+tests\test_comportamento_legado.py     120      0   100%
+tests\test_supermarket.py               24      0   100%
+--------------------------------------------------------
+TOTAL                                  402     29    93%

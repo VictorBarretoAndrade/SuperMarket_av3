@@ -5,16 +5,77 @@
 Logs brutos: `docs/evidencias/testes/`.
 
 ## 1. Execução inicial (Passo 2)
-<!-- comandos, ambiente (python --version, pip freeze), saída do pytest em v0-legado -->
 
-## 2. Testes de caracterização: rodando na tag v0-legado
+- **Ambiente**: Python `3.12.10` em `.venv` (`pytest==9.2.0`, `approvaltests==21.1.0`, `pytest-approvaltests==0.2.4`, `coverage==7.17.5`). Lista completa de pacotes em [ambiente.txt](evidencias/testes/ambiente.txt).
+- **Comandos executados na tag `v0-legado`**:
+
+```bash
+git checkout v0-legado -- src
+python -m pytest -v tests/test_supermarket.py
+git checkout HEAD -- src
+```
+
+- **Resultado observado** ([execucao_inicial_v0_legado.txt](evidencias/testes/execucao_inicial_v0_legado.txt)):
+  - `1 passed in 0.02s` (`test_supermarket.py::test_ten_percent_discount`).
+  - O legado possuía apenas 1 teste unitário cobrindo um carrinho com maçãs sem oferta aplicada e uma oferta não utilizada em `toothbrush`.
+
+## 2. Testes de caracterização: rodando na tag `v0-legado`
+
+Foram implementados em `tests/test_comportamento_legado.py` **24 casos de teste** cobrindo todos os cenários do checklist da P2 usando exclusivamente a API pública (`Teller`, `ShoppingCart`, `Receipt`, `ReceiptPrinter` e `approvaltests`):
+
+- Carrinho vazio e carrinho sem ofertas (`EACH` e `KILO`);
+- Mesmo produto adicionado várias vezes via `add_item` e `add_item_quantity`;
+- `THREE_FOR_TWO` (1, 2, 3, 4, 6 e 7 unidades);
+- `TEN_PERCENT_DISCOUNT` (`EACH` e `KILO`, com argumento `10.0` e `20.0`);
+- `TWO_FOR_AMOUNT` (1, 2, 4 unidades e o comportamento legado com bug em 3 unidades);
+- `FIVE_FOR_AMOUNT` (4, 5, 6, 10 e 11 unidades);
+- Oferta para produto ausente no carrinho, sobrescrita de oferta no mesmo produto e múltiplas ofertas simultâneas;
+- Recibo completo formatado pelo `ReceiptPrinter` validado com `approvaltests` ([arquivo aprovado](../../tests/approved_files/test_comportamento_legado.test_printed_receipt_matches_approved_output.approved.txt)).
+
+- **Comandos executados contra `v0-legado`**:
+
+```bash
+git checkout v0-legado -- src
+python -m pytest -v tests/test_comportamento_legado.py
+git checkout HEAD -- src
+```
+
+- **Resultado observado** ([caracterizacao_v0_legado.txt](evidencias/testes/caracterizacao_v0_legado.txt)):
+  - `24 passed in 0.07s`.
+
+- **Execução completa na branch `test/caracterizacao`** (`python -m pytest -v`, [pytest_atual.txt](evidencias/testes/pytest_atual.txt)):
+  - `25 passed, 5 xfailed in 0.19s` (`1` teste original + `24` de caracterização passando; `5` testes de aceitação de combos em `tests/test_combos.py` permanecem como `xfail` esperado até a entrega da P4).
 
 ## 3. Testes após a refatoração e os combos
 
+_Pendente da entrega e merge da refatoração (P3) e dos combos (P4), conforme ordem de merge da seção 3 e 7 de [divisao_tarefas.md](divisao_tarefas.md). Após os merges, esta seção será atualizada com a execução completa sem `xfail`._
+
 ## 4. Comparativo antes/depois
 
-| Suíte | v0-legado | Final |
-|-------|-----------|-------|
+| Suíte | `v0-legado` (inicial) | `test/caracterizacao` (baseline P2) | Final (pós P3 + P4) |
+|-------|-----------------------|-------------------------------------|---------------------|
+| `tests/test_supermarket.py` | 1 passed | 1 passed | _pendente_ |
+| `tests/test_comportamento_legado.py` | — (não existia na tag; 24 passed ao rodar contra `v0-legado`) | 24 passed | _pendente_ |
+| `tests/test_combos.py` | — | 5 xfailed (esperado) | _pendente_ |
+| **Total** | **1 passed** | **25 passed, 5 xfailed** | _pendente_ |
 
 ## 5. Cobertura
-<!-- python -m coverage run -m pytest && python -m coverage report -->
+
+Comandos executados na branch `test/caracterizacao`:
+
+```bash
+python -m coverage run --source=src -m pytest
+python -m coverage report -m
+```
+
+- **Cobertura em `src/`** ([cobertura_baseline.txt](evidencias/testes/cobertura_baseline.txt)):
+  - `src/model_objects.py`: `100%` (27/27)
+  - `src/receipt.py`: `100%` (27/27)
+  - `src/shopping_cart.py`: `98%` (48/49; apenas a property `product_quantities` na linha 21 não foi acessada externamente)
+  - `src/teller.py`: `95%` (20/21; apenas `product_with_name` na linha 29)
+  - `src/catalog.py`: `60%` (3/5; métodos base abstratos que lançam exceção)
+  - `src/discount_strategy.py`: `0%` (0/4; contrato criado no commit zero, ainda sem implementações concretas antes da P3/P4)
+  - **Total em `src/`**: **94%** (`133` declarações, `8` não cobertas).
+
+- **Cobertura executando `python -m coverage run -m pytest && python -m coverage report`** ([cobertura_completa.txt](evidencias/testes/cobertura_completa.txt)):
+  - **Total geral (`src/` + `tests/`)**: **93%** (`402` declarações, `29` não cobertas), com `100%` em `tests/receipt_printer.py` e `tests/test_comportamento_legado.py`.
