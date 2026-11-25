@@ -37,4 +37,21 @@ Descontos aparecem no recibo como valores **negativos**. Comparações de valor 
 | RNF07 | Rastreabilidade das mudanças | Commits pequenos, em inglês, no formato `tipo: descrição`; uma branch por frente de trabalho; regressões revertidas com `git revert` (nunca `push --force` no `main`) |
 
 ## 3. Matriz de rastreabilidade
-<!-- requisito -> implementação -> teste -> evidência -->
+
+| Requisito | Implementação (após refatoração) | Teste | Evidência |
+|-----------|----------------------------------|-------|-----------|
+| RF01 | `Teller.checks_out_articles_from`, `Receipt.total_price` | `test_supermarket.py`, `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF02 | estratégia de 3 por 2 em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF03 | estratégia percentual em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF04 | estratégia de 2 por valor em `src/offers/` (+ commit `fix:` da D6) | `test_comportamento_legado.py` | `docs/evidencias/testes/`, `docs/evidencias_testes.md` |
+| RF05 | estratégia de 5 por valor em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF06 | `Receipt`, `ReceiptItem`, `tests/receipt_printer.py` | `test_comportamento_legado.py` + `tests/approved_files/` | `docs/evidencias/testes/` |
+| RF07 – RF10 | `src/combo_offer.py`, `Teller.add_combo_offer` | `test_combos.py` | `docs/evidencias/testes/` |
+| RF11 – RF12 | `Teller.add_special_offer`, fábrica de estratégias | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RNF01 | API pública (D7) | `test_comportamento_legado.py` em `v0-legado` e no `main` | `docs/evidencias_testes.md` (comparativo) |
+| RNF02 | `src/discount_strategy.py`, `src/offers/`, `src/combo_offer.py` | `test_combos.py` | `docs/padroes_projeto.md`, seção 6 |
+| RNF03 | `scripts/security_audit.py` | — | `docs/seguranca_antes_depois.md`, `docs/evidencias/seguranca/` |
+| RNF04 | `README.md`, `requirements*.txt` | execução do zero | `README.md` |
+| RNF05 | — | `coverage` | `docs/evidencias_testes.md`, seção 5 |
+| RNF06 | `src/` | `radon cc` | `docs/diagnostico_tecnico.md`, seção 3 (antes) |
+| RNF07 | histórico do git | — | `git log`, tag `v0-legado` |
