@@ -105,3 +105,13 @@ O único bloco fora do rank A é `handle_offers`, o que confirma o problema #1 c
 Ou seja: **nenhuma linha de cálculo de desconto (34-68) é executada pelos testes do legado.**
 
 ## 4. Conclusão
+
+O legado é pequeno, mas concentra toda a regra de promoções em um método de alta complexidade (CC 13), sem testes que o exercitem e com pelo menos dois comportamentos incorretos (#2 e #4). Isso torna arriscada qualquer evolução, como a regra de combos.
+
+Prioridades, em ordem:
+
+1. **Rede de segurança primeiro** (P2): testes de caracterização cobrindo todos os ramos de `handle_offers` (linhas 34-68), inclusive os bugs como estão (D6). Meta: cobertura de `src/` ≥ 90% (RNF05).
+2. **Refatoração** (P3): extrair cada oferta para uma `DiscountStrategy` criada por uma fábrica, eliminando a cadeia de `if`s (#1, #3, #5) sem mudar a API pública (D7).
+3. **Nova regra** (P4): combo como mais uma estratégia, provando a extensibilidade (RNF02).
+4. **Correção do bug** #2 em commit `fix:` separado, com o teste atualizado (D6).
+5. Itens #7 a #14 ficam registrados como dívida técnica. Só entram se não alterarem a API pública e tiverem teste.
