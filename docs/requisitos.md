@@ -28,10 +28,13 @@ Descontos aparecem no recibo como valores **negativos**. Comparações de valor 
 
 | ID | Descrição | Critério verificável |
 |----|-----------|----------------------|
-| RNF01 | A API pública existente é preservada (D7) | Testes de caracterização passam sem alteração |
-| RNF02 | Extensibilidade: nova promoção sem alterar as existentes | |
-| RNF03 | Segurança: sem achados de severidade alta no Bandit e sem dependência vulnerável | |
-| RNF04 | Reprodutibilidade | README permite rodar do zero |
+| RNF01 | A API pública existente é preservada (D7) | Testes de caracterização passam sem alteração na tag `v0-legado` e no `main` final (exceto o teste do bug da D6, atualizado no commit `fix:`) |
+| RNF02 | Extensibilidade: nova promoção sem alterar as existentes | O combo entra como uma nova classe `DiscountStrategy` + registro na fábrica. O diff do commit `feat:` do combo não altera nenhuma estratégia existente |
+| RNF03 | Segurança: sem achados de severidade alta no Bandit e sem dependência vulnerável | `python scripts/security_audit.py depois`: Bandit sem `High`; pip-audit e Safety sem vulnerabilidades conhecidas, ou cada achado triado e justificado em `docs/seguranca_antes_depois.md` |
+| RNF04 | Reprodutibilidade | Seguindo só o README, um ambiente novo (Python ≥ 3.10) instala as dependências e roda `python -m pytest` com sucesso |
+| RNF05 | Testabilidade / cobertura | Cobertura de linhas de `src/` ≥ 90% (`python -m coverage report`). No legado era 71%, com 41% em `shopping_cart.py` |
+| RNF06 | Manutenibilidade | Nenhum método de `src/` com complexidade ciclomática acima de 10 (`python -m radon cc src`, rank A ou B). No legado, `handle_offers` tinha 13 (rank C) |
+| RNF07 | Rastreabilidade das mudanças | Commits pequenos, em inglês, no formato `tipo: descrição`; uma branch por frente de trabalho; regressões revertidas com `git revert` (nunca `push --force` no `main`) |
 
 ## 3. Matriz de rastreabilidade
 <!-- requisito -> implementação -> teste -> evidência -->
