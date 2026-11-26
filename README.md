@@ -27,20 +27,22 @@ O trabalho tem quatro frentes:
 │   ├── test_combos.py               testes de aceitação dos combos
 │   └── test_offer_strategies.py     testes unitários das estratégias
 ├── scripts/security_audit.py        roda Bandit, pip-audit e Safety e salva as evidências
-├── docs/
-│   ├── divisao_tarefas.md           divisão do time e decisões D1–D7
-│   ├── diagnostico_tecnico.md
-│   ├── requisitos.md
-│   ├── plano_contingencia.md
-│   ├── padroes_projeto.md
-│   ├── seguranca_antes_depois.md
-│   ├── evidencias_testes.md
-│   ├── evidencias/                  logs brutos (testes e segurança)
-│   └── legado/README_original.md
+├── docs/                            documentos de entrega em PDF
+│   ├── diagnostico_tecnico.pdf
+│   ├── requisitos.pdf
+│   ├── plano_contingencia.pdf
+│   ├── padroes_projeto.pdf
+│   ├── seguranca_antes_depois.pdf
+│   ├── evidencias_testes.pdf
+│   ├── licoes_aprendidas.pdf
+│   ├── evidencias/                  logs brutos (testes e segurança, antes/depois)
+│   └── legado/
+│       ├── README_original.md       README original do kata
+│       └── mds/                     fontes em Markdown dos PDFs + divisao_tarefas.md
 └── apresentacao/                    slides.pdf
 ```
 
-Os documentos são escritos em Markdown e exportados para PDF na entrega final.
+Os documentos de entrega estão em PDF em `docs/`. As fontes em Markdown, usadas para gerar os PDFs, ficam em `docs/legado/mds/` (a pasta `legado/` guarda material de apoio, não o código legado, que está na tag `v0-legado`).
 
 ## Ambiente
 
@@ -89,7 +91,7 @@ teller.add_combo_offer([toothbrush, toothpaste], percent=15.0)
 - **Convivência com outras ofertas (D1):** produto que já tem oferta individual não entra no combo, e cada unidade consumida por um combo é abatida antes de avaliar os demais combos, para não haver desconto duplicado.
 - **Extensibilidade:** `ComboOffer` implementa o mesmo contrato `DiscountStrategy` e foi adicionado sem alterar nenhuma estratégia existente (RNF02).
 
-Requisitos RF07–RF10 em [docs/requisitos.md](docs/requisitos.md); testes em `tests/test_combos.py`.
+Requisitos RF07–RF10 em [docs/requisitos.pdf](docs/requisitos.pdf); testes em `tests/test_combos.py`.
 
 ## Segurança
 
@@ -97,21 +99,31 @@ Requisitos RF07–RF10 em [docs/requisitos.md](docs/requisitos.md); testes em `t
 python scripts/security_audit.py antes    # ou: depois
 ```
 
-As saídas ficam em `docs/evidencias/seguranca/<etapa>/`. O `safety scan` exige uma conta Safety. Sem login, o script registra essa limitação e tenta o modo legado `safety check`. A análise está em [docs/seguranca_antes_depois.md](docs/seguranca_antes_depois.md).
+As saídas ficam em `docs/evidencias/seguranca/<etapa>/`. O `safety scan` exige uma conta Safety. Sem login, o script registra essa limitação e tenta o modo legado `safety check`. A análise completa está em [docs/seguranca_antes_depois.pdf](docs/seguranca_antes_depois.pdf).
+
+Resultado da auditoria, antes (legado) e depois (refatoração + combos):
+
+| Ferramenta | Antes | Depois |
+|------------|-------|--------|
+| Bandit em `src/` (High / Medium / Low) | 0 / 0 / 0 em 149 linhas | 0 / 0 / 0 em 344 linhas |
+| pip-audit (`requirements.txt`) | nenhuma vulnerabilidade | nenhuma vulnerabilidade |
+| Safety (85 dependências) | 0 ativas, 26 ignoradas pela política | 0 ativas, 26 ignoradas pela política |
+
+O código cresceu (novas estratégias e o combo) sem introduzir nenhum achado, e nenhuma dependência nova foi adicionada. Os 26 itens do Safety são do ambiente de desenvolvimento e estão triados no documento (RNF03 atendido).
 
 ## Análise do legado
 
 Documentos da análise feita antes de qualquer mudança no código (base: tag `v0-legado`):
 
-- [Diagnóstico técnico](docs/diagnostico_tecnico.md): 15 problemas com arquivo e linha, métricas (radon e coverage) e prioridades.
-- [Requisitos](docs/requisitos.md): RF01–RF12 e RNF01–RNF07, com critérios de aceitação e matriz de rastreabilidade.
-- [Plano de contingência](docs/plano_contingencia.md): sequência das etapas, invariantes, riscos e estratégia de reversão.
+- [Diagnóstico técnico](docs/diagnostico_tecnico.pdf): 15 problemas com arquivo e linha, métricas (radon e coverage) e prioridades.
+- [Requisitos](docs/requisitos.pdf): RF01–RF12 e RNF01–RNF07, com critérios de aceitação e matriz de rastreabilidade.
+- [Plano de contingência](docs/plano_contingencia.pdf): sequência das etapas, invariantes, riscos e estratégia de reversão.
 
 Resumo: toda a regra de promoções está em `ShoppingCart.handle_offers` (complexidade ciclomática 13), que no legado não era executada por nenhum teste (cobertura de 41% em `shopping_cart.py`). Por isso a ordem é: caracterizar, refatorar, estender (combos) e só então corrigir o bug do `TWO_FOR_AMOUNT`.
 
 ## Como o time trabalha
 
-Divisão de tarefas, quem é dono de cada arquivo, ordem de merge e decisões de negócio: [docs/divisao_tarefas.md](docs/divisao_tarefas.md).
+Divisão de tarefas, quem é dono de cada arquivo, ordem de merge e decisões de negócio: [docs/legado/mds/divisao_tarefas.md](docs/legado/mds/divisao_tarefas.md).
 
 Commits pequenos, em inglês, no formato `tipo: descrição` (`feat`, `fix`, `docs`, `test`, `build`, `refactor`, `chore`, `security`, ...).
 
@@ -120,7 +132,7 @@ Commits pequenos, em inglês, no formato `tipo: descrição` (`feat`, `fix`, `do
 O cálculo de ofertas saiu de um único método com uma cadeia de `if`s
 (`ShoppingCart.handle_offers`, complexidade 13) para **uma classe por
 modalidade de oferta**. Detalhes, diagramas antes/depois e testes
-relacionados: [docs/padroes_projeto.md](docs/padroes_projeto.md).
+relacionados: [docs/padroes_projeto.pdf](docs/padroes_projeto.pdf).
 
 | Padrão | Onde | Problema que resolve |
 |--------|------|----------------------|
@@ -137,17 +149,23 @@ Decisões que guiaram a refatoração:
   operações original. O bug do `TWO_FOR_AMOUNT` foi preservado durante a
   refatoração e corrigido depois num commit `fix:` separado (D6): com 3
   unidades, o total passou de 2,175 para 1,68 (ver
-  [docs/padroes_projeto.md](docs/padroes_projeto.md), seção 7).
+  [docs/padroes_projeto.pdf](docs/padroes_projeto.pdf), seção 7).
 - **Extensível (SOLID):** uma nova promoção é uma nova classe; o carrinho
   depende só da abstração `DiscountStrategy`.
 
 | Métrica | Legado (`v0-legado`) | Após a refatoração | Final (com combos) | Meta |
 |---------|----------------------|--------------------|--------------------|------|
 | Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) | 5 (A) | ≤ 10 (RNF06) |
-| Maior complexidade em `src/` | 13 (C) | 5 (A) | 6 (B) | ≤ 10 (RNF06) |
+| Maior complexidade em `src/` | 13 (C) | 5 (A) | 8 (B) | ≤ 10 (RNF06) |
 | Cobertura de `src/` | 71% | 98% | 99% | ≥ 90% (RNF05) |
 | Testes passando | 1 | 44 (+ 5 `xfail`) | 57 | — |
 | "2 por 0,99" com 3 unidades | 2,175 (bug) | 1,68 | 1,68 | — |
+
+## Evidências e lições aprendidas
+
+- [Evidências de testes](docs/evidencias_testes.pdf): execução no legado, após a refatoração e final (57 testes), com comparativo e cobertura. Logs brutos em `docs/evidencias/testes/`.
+- [Segurança antes/depois](docs/seguranca_antes_depois.pdf): triagem dos achados e comparação. Logs brutos em `docs/evidencias/seguranca/`.
+- [Lições aprendidas](docs/licoes_aprendidas.pdf): processo do time, lições de cada frente (análise, testes, refatoração, combos e segurança), o que faríamos diferente e resultado final.
 
 ## Licença
 
