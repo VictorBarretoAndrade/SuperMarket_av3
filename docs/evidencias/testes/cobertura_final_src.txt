@@ -1,0 +1,18 @@
+﻿Name                                 Stmts   Miss  Cover   Missing
+------------------------------------------------------------------
+src\catalog.py                           5      2    60%   5, 8
+src\combo_offer.py                      19      0   100%
+src\discount_strategy.py                 4      0   100%
+src\model_objects.py                    27      0   100%
+src\offers\__init__.py                   0      0   100%
+src\offers\factory.py                   13      0   100%
+src\offers\five_for_amount.py           12      0   100%
+src\offers\percentage_discount.py        5      0   100%
+src\offers\single_product_offer.py      20      0   100%
+src\offers\three_for_two.py             13      0   100%
+src\offers\two_for_amount.py            12      0   100%
+src\receipt.py                          27      0   100%
+src\shopping_cart.py                    26      0   100%
+src\teller.py                           29      1    97%   45
+------------------------------------------------------------------
+TOTAL                                  212      3    99%

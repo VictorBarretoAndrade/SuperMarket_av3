@@ -48,7 +48,14 @@ git checkout HEAD -- src
 
 ## 3. Testes após a refatoração e os combos
 
-_Pendente da entrega e merge da refatoração (P3) e dos combos (P4), conforme ordem de merge da seção 3 e 7 de [divisao_tarefas.md](divisao_tarefas.md). Após os merges, esta seção será atualizada com a execução completa sem `xfail`._
+Após os merges da refatoração (P3, Strategy + Factory Method + Template Method), dos combos promocionais (P4) e da correção de `TWO_FOR_AMOUNT`, toda a suíte executou sem nenhuma falha nem `xfail`.
+
+- **Comando**: `python -m pytest -v` (na branch `development`, Python `3.12.10` em `.venv`).
+- **Resultado observado** ([pytest_final.txt](evidencias/testes/pytest_final.txt)): **`55 passed in 0.52s`** (`0 failed`, `0 xfailed`):
+  - `tests/test_supermarket.py`: `1 passed`
+  - `tests/test_comportamento_legado.py`: `24 passed`
+  - `tests/test_offer_strategies.py`: `19 passed`
+  - `tests/test_combos.py`: `11 passed`
 
 ### Correção do bug `TWO_FOR_AMOUNT` (P3, decisão D6)
 
@@ -66,12 +73,15 @@ Justificativa e trecho antes/depois: [padroes_projeto.md, seção 7](padroes_pro
 
 | Suíte | `v0-legado` (inicial) | `test/caracterizacao` (baseline P2) | Final (pós P3 + P4) |
 |-------|-----------------------|-------------------------------------|---------------------|
-| `tests/test_supermarket.py` | 1 passed | 1 passed | _pendente_ |
-| `tests/test_comportamento_legado.py` | — (não existia na tag; 24 passed ao rodar contra `v0-legado`) | 24 passed | _pendente_ |
-| `tests/test_combos.py` | — | 5 xfailed (esperado) | _pendente_ |
-| **Total** | **1 passed** | **25 passed, 5 xfailed** | _pendente_ |
+| `tests/test_supermarket.py` | 1 passed | 1 passed | 1 passed |
+| `tests/test_comportamento_legado.py` | — (não existia na tag; 24 passed ao rodar contra `v0-legado`) | 24 passed | 24 passed |
+| `tests/test_offer_strategies.py` | — | — | 19 passed |
+| `tests/test_combos.py` | — | 5 xfailed (esperado) | 11 passed |
+| **Total** | **1 passed** | **25 passed, 5 xfailed** | **55 passed** |
 
 ## 5. Cobertura
+
+### Baseline (`test/caracterizacao`, antes da refatoração e combos)
 
 Comandos executados na branch `test/caracterizacao`:
 
@@ -91,3 +101,32 @@ python -m coverage report -m
 
 - **Cobertura executando `python -m coverage run -m pytest && python -m coverage report`** ([cobertura_completa.txt](evidencias/testes/cobertura_completa.txt)):
   - **Total geral (`src/` + `tests/`)**: **93%** (`402` declarações, `29` não cobertas), com `100%` em `tests/receipt_printer.py` e `tests/test_comportamento_legado.py`.
+
+### Final (`development`, pós P3 + P4)
+
+Comandos executados na branch `development`:
+
+```bash
+python -m coverage run --source=src -m pytest
+python -m coverage report -m
+```
+
+- **Cobertura em `src/`** ([cobertura_final_src.txt](evidencias/testes/cobertura_final_src.txt)):
+  - `src/combo_offer.py`: `100%` (19/19)
+  - `src/discount_strategy.py`: `100%` (4/4)
+  - `src/model_objects.py`: `100%` (27/27)
+  - `src/offers/__init__.py`: `100%` (0/0)
+  - `src/offers/factory.py`: `100%` (13/13)
+  - `src/offers/five_for_amount.py`: `100%` (12/12)
+  - `src/offers/percentage_discount.py`: `100%` (5/5)
+  - `src/offers/single_product_offer.py`: `100%` (20/20)
+  - `src/offers/three_for_two.py`: `100%` (13/13)
+  - `src/offers/two_for_amount.py`: `100%` (12/12)
+  - `src/receipt.py`: `100%` (27/27)
+  - `src/shopping_cart.py`: `100%` (26/26)
+  - `src/teller.py`: `97%` (28/29; apenas `product_with_name` na linha 45)
+  - `src/catalog.py`: `60%` (3/5; métodos base abstratos que lançam exceção)
+  - **Total em `src/`**: **99%** (`212` declarações, `3` não cobertas).
+
+- **Cobertura completa (`python -m coverage run -m pytest && python -m coverage report`)** ([cobertura_final_completa.txt](evidencias/testes/cobertura_final_completa.txt)):
+  - **Total geral (`src/` + `tests/`)**: **99%** (`593` declarações, `3` não cobertas — `100%` em todos os arquivos de `tests/`).
