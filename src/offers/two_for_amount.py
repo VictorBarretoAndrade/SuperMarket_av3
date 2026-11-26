@@ -9,17 +9,18 @@ class TwoForAmountStrategy(SingleProductOfferStrategy):
     GROUP_SIZE = 2
 
     def _discount_for(self, quantity, unit_price):
-        """Calcule o desconto dos pares de unidades.
+        """Calcule o desconto dos pares completos de unidades.
 
-        Decisão D6: a divisão real (``/``) do legado é preservada de
-        propósito. Com quantidade ímpar ela gera um "desconto" positivo,
-        bug caracterizado em ``tests/test_comportamento_legado.py`` que
-        será corrigido em um commit ``fix:`` separado.
+        A unidade que sobra fora de um par mantém o preço normal. O legado
+        usava divisão real (``/``) e, com quantidade ímpar, cobrava meio
+        par a mais, gerando um "desconto" positivo; a correção (decisão
+        D6) usa divisão inteira (``//``).
         """
         whole_units = int(quantity)
         if whole_units < self.GROUP_SIZE:
             return None
-        total = (self.argument * (whole_units / self.GROUP_SIZE)
+        pairs = whole_units // self.GROUP_SIZE
+        total = (self.argument * pairs
                  + whole_units % self.GROUP_SIZE * unit_price)
         discount_amount = unit_price * quantity - total
         return Discount(self.product, "2 for " + str(self.argument),

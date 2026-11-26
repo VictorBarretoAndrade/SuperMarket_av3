@@ -65,7 +65,9 @@ def test_percentage_discount_strategy(catalog, rice):
 @pytest.mark.parametrize("quantity, expected_amount", [
     (1, None),
     (2, -0.39),
+    (3, -0.39),
     (4, -0.78),
+    (5, -0.78),
 ])
 def test_two_for_amount_strategy(
         catalog, cherry_tomatoes, quantity, expected_amount):

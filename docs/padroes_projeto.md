@@ -110,8 +110,9 @@ class ThreeForTwoStrategy(SingleProductOfferStrategy):
 
   As fórmulas mantêm **a mesma ordem de operações** do legado, para que os
   valores em ponto flutuante do recibo sejam idênticos. O bug do
-  `TWO_FOR_AMOUNT` com quantidade ímpar foi preservado de propósito (decisão
-  D6) e será corrigido num commit `fix:` separado.
+  `TWO_FOR_AMOUNT` com quantidade ímpar foi preservado de propósito durante a
+  refatoração (decisão D6) e corrigido depois num commit `fix:` separado
+  (ver seção 7).
 
 - **Testes relacionados:** `tests/test_offer_strategies.py`
   (`test_three_for_two_strategy`, `test_percentage_discount_strategy`,
@@ -290,3 +291,44 @@ Promoções que envolvem **vários produtos**, como o combo, implementam
 do carrinho.
 
 <!-- Seção do combo: P4 -->
+
+## 7. Correção do bug do `TWO_FOR_AMOUNT` (decisão D6)
+
+Item #2 de `docs/diagnostico_tecnico.md`. Corrigido **depois** da
+refatoração, num commit `fix:` próprio, para que a mudança de comportamento
+fique isolada e possa ser revertida sozinha (`git revert`).
+
+- **Problema:** o legado contava os pares com divisão real
+  (`quantity_as_int / x`). Com quantidade ímpar, cobrava "meio par" a mais.
+  Exemplo do teste: 3 caixas de tomate-cereja a 0,69 com "2 por 0,99" geravam
+  um "desconto" **positivo** de 0,105 e total de **2,175**, mais caro que sem
+  oferta (2,07).
+- **Correção** (`src/offers/two_for_amount.py`): os pares passam a ser contados
+  com divisão inteira (`whole_units // GROUP_SIZE`), como já fazem
+  `ThreeForTwoStrategy` e `FiveForAmountStrategy`.
+
+```python
+# antes (preservado na refatoração)
+total = (self.argument * (whole_units / self.GROUP_SIZE)
+         + whole_units % self.GROUP_SIZE * unit_price)
+
+# depois
+pairs = whole_units // self.GROUP_SIZE
+total = (self.argument * pairs
+         + whole_units % self.GROUP_SIZE * unit_price)
+```
+
+| 3 caixas, "2 por 0,99" | Legado | Após o `fix:` |
+|------------------------|--------|---------------|
+| Desconto | +0,105 | **-0,39** |
+| Total | 2,175 | **1,68** (0,99 + 0,69) |
+
+- **Justificativa:** RF04 (`docs/requisitos.md`) define que a unidade excedente
+  paga o preço normal, e uma promoção nunca pode deixar a compra mais cara do
+  que sem oferta. Quantidades pares não mudam (a divisão já era exata), então
+  as demais regras e o recibo aprovado continuam iguais.
+- **Testes:** no mesmo commit,
+  `test_two_for_amount_with_odd_quantity_charges_leftover_at_regular_price`
+  (`tests/test_comportamento_legado.py`) passa a esperar 1,68 / -0,39, e
+  `test_two_for_amount_strategy` (`tests/test_offer_strategies.py`) ganha os
+  casos de 3 e 5 unidades. É a única exceção prevista no RNF01.
