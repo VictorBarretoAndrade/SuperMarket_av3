@@ -117,8 +117,10 @@ Decisões que guiaram a refatoração:
   `Receipt` e demais classes mantêm nomes e assinaturas; os testes de
   caracterização passam sem alteração.
 - **Comportamento idêntico ao legado:** as fórmulas mantêm a ordem de
-  operações original, inclusive o bug do `TWO_FOR_AMOUNT`, que é corrigido
-  depois num commit `fix:` separado (D6).
+  operações original. O bug do `TWO_FOR_AMOUNT` foi preservado durante a
+  refatoração e corrigido depois num commit `fix:` separado (D6): com 3
+  unidades, o total passou de 2,175 para 1,68 (ver
+  [docs/padroes_projeto.md](docs/padroes_projeto.md), seção 7).
 - **Extensível (SOLID):** uma nova promoção é uma nova classe; o carrinho
   depende só da abstração `DiscountStrategy`.
 

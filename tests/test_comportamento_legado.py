@@ -135,16 +135,14 @@ def test_two_for_amount_offer_even_and_single_quantities(
     assert receipt.total_price() == pytest.approx(expected_total)
 
 
-def test_two_for_amount_with_odd_quantity_charges_more_than_regular_price(
+def test_two_for_amount_with_odd_quantity_charges_leftover_at_regular_price(
         teller, cart, cherry_tomatoes):
-    """Caracteriza um BUG do legado (ver docs/diagnostico_tecnico.md).
+    """Verifica a correção do bug do legado (D6, ver docs/padroes_projeto.md).
 
-    shopping_cart.py usa divisão real (quantity_as_int / x) em vez de inteira.
-    Com 3 unidades de 0,69 e oferta "2 por 0,99" o total deveria ser
-    0,99 + 0,69 = 1,68 (abaixo dos 2,07 sem oferta), mas o legado gera um
-    "desconto" POSITIVO de 0,105 e cobra 2,175 - mais caro que sem oferta.
-    Se o time decidir corrigir (commit fix separado), este teste deve ser
-    atualizado no mesmo commit, com a justificativa documentada.
+    O legado usava divisão real (quantity_as_int / x) e, com 3 unidades de
+    0,69 e oferta "2 por 0,99", gerava um "desconto" POSITIVO de 0,105 e
+    cobrava 2,175, mais caro que sem oferta. Após o commit fix, 1 par sai
+    por 0,99 e a unidade excedente por 0,69: total 1,68, desconto -0,39.
     """
     teller.add_special_offer(SpecialOfferType.TWO_FOR_AMOUNT, cherry_tomatoes, 0.99)
     cart.add_item_quantity(cherry_tomatoes, 3)
@@ -152,8 +150,8 @@ def test_two_for_amount_with_odd_quantity_charges_more_than_regular_price(
     receipt = teller.checks_out_articles_from(cart)
 
     assert len(receipt.discounts) == 1
-    assert receipt.discounts[0].discount_amount == pytest.approx(0.105)
-    assert receipt.total_price() == pytest.approx(2.175)
+    assert receipt.discounts[0].discount_amount == pytest.approx(-0.39)
+    assert receipt.total_price() == pytest.approx(1.68)
 
 
 @pytest.mark.parametrize(

@@ -50,6 +50,18 @@ git checkout HEAD -- src
 
 _Pendente da entrega e merge da refatoração (P3) e dos combos (P4), conforme ordem de merge da seção 3 e 7 de [divisao_tarefas.md](divisao_tarefas.md). Após os merges, esta seção será atualizada com a execução completa sem `xfail`._
 
+### Correção do bug `TWO_FOR_AMOUNT` (P3, decisão D6)
+
+- **Comando**: `python -m pytest -v`, após o commit `fix:` (Python `3.11.9` em `.venv`).
+- **Resultado** ([pytest_pos_fix_two_for_amount.txt](evidencias/testes/pytest_pos_fix_two_for_amount.txt)): `44 passed, 5 xfailed`.
+- **Mudança intencional** (única exceção prevista no RNF01): o teste que caracterizava o bug foi atualizado no mesmo commit `fix:`.
+
+| Teste | Antes (legado) | Depois do `fix:` |
+|-------|----------------|------------------|
+| `test_two_for_amount_with_odd_quantity_charges_more_than_regular_price` -> renomeado para `test_two_for_amount_with_odd_quantity_charges_leftover_at_regular_price` | desconto `+0,105`, total `2,175` | desconto `-0,39`, total `1,68` |
+
+Justificativa e trecho antes/depois: [padroes_projeto.md, seção 7](padroes_projeto.md). Os demais testes de caracterização e o recibo aprovado não mudaram.
+
 ## 4. Comparativo antes/depois
 
 | Suíte | `v0-legado` (inicial) | `test/caracterizacao` (baseline P2) | Final (pós P3 + P4) |

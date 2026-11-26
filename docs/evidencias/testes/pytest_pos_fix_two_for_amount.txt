@@ -1,0 +1,60 @@
+============================= test session starts =============================
+platform win32 -- Python 3.11.9, pytest-9.2.0, pluggy-1.7.0 -- C:\Users\julib\Documents\SuperMarket_av3\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: c:\Users\julib\Documents\SuperMarket_av3
+configfile: pytest.ini
+testpaths: tests
+plugins: anyio-4.16.0, approvaltests-21.1.0, platformdirs-4.14.8, approvaltests-0.2.4
+collecting ... collected 49 items
+
+tests/test_combos.py::test_one_full_combo_gets_ten_percent_off XFAIL     [  2%]
+tests/test_combos.py::test_extra_item_keeps_regular_price XFAIL (com...) [  4%]
+tests/test_combos.py::test_two_full_combos XFAIL (combo ainda não im...) [  6%]
+tests/test_combos.py::test_incomplete_combo_has_no_discount XFAIL (c...) [  8%]
+tests/test_combos.py::test_product_with_individual_offer_is_not_in_combo XFAIL [ 10%]
+tests/test_comportamento_legado.py::test_empty_cart_produces_empty_receipt PASSED [ 12%]
+tests/test_comportamento_legado.py::test_cart_without_offers_sums_each_and_kilo_items PASSED [ 14%]
+tests/test_comportamento_legado.py::test_same_product_added_multiple_times_aggregates_for_offer PASSED [ 16%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[1-0-0.0-0.99] PASSED [ 18%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[2-0-0.0-1.98] PASSED [ 20%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[3-1--0.99-1.98] PASSED [ 22%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[4-1--0.99-2.97] PASSED [ 24%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[6-1--1.98-3.96] PASSED [ 26%]
+tests/test_comportamento_legado.py::test_three_for_two_offer[7-1--1.98-4.95] PASSED [ 28%]
+tests/test_comportamento_legado.py::test_ten_percent_discount_on_each_item PASSED [ 30%]
+tests/test_comportamento_legado.py::test_percentage_discount_on_kilo_with_argument_other_than_ten PASSED [ 32%]
+tests/test_comportamento_legado.py::test_two_for_amount_offer_even_and_single_quantities[1-0-0.0-0.69] PASSED [ 34%]
+tests/test_comportamento_legado.py::test_two_for_amount_offer_even_and_single_quantities[2-1--0.39-0.99] PASSED [ 36%]
+tests/test_comportamento_legado.py::test_two_for_amount_offer_even_and_single_quantities[4-1--0.78-1.98] PASSED [ 38%]
+tests/test_comportamento_legado.py::test_two_for_amount_with_odd_quantity_charges_leftover_at_regular_price PASSED [ 40%]
+tests/test_comportamento_legado.py::test_five_for_amount_offer[4-0-0.0-7.16] PASSED [ 42%]
+tests/test_comportamento_legado.py::test_five_for_amount_offer[5-1--1.46-7.49] PASSED [ 44%]
+tests/test_comportamento_legado.py::test_five_for_amount_offer[6-1--1.46-9.28] PASSED [ 46%]
+tests/test_comportamento_legado.py::test_five_for_amount_offer[10-1--2.92-14.98] PASSED [ 48%]
+tests/test_comportamento_legado.py::test_five_for_amount_offer[11-1--2.92-16.77] PASSED [ 51%]
+tests/test_comportamento_legado.py::test_offer_for_product_not_in_cart_is_ignored PASSED [ 53%]
+tests/test_comportamento_legado.py::test_second_offer_for_same_product_overwrites_first PASSED [ 55%]
+tests/test_comportamento_legado.py::test_multiple_offers_on_different_products_in_same_cart PASSED [ 57%]
+tests/test_comportamento_legado.py::test_printed_receipt_matches_approved_output PASSED [ 59%]
+tests/test_offer_strategies.py::test_strategy_returns_empty_list_when_product_is_not_in_cart PASSED [ 61%]
+tests/test_offer_strategies.py::test_three_for_two_strategy[2-None] PASSED [ 63%]
+tests/test_offer_strategies.py::test_three_for_two_strategy[3--0.99] PASSED [ 65%]
+tests/test_offer_strategies.py::test_three_for_two_strategy[7--1.98] PASSED [ 67%]
+tests/test_offer_strategies.py::test_percentage_discount_strategy PASSED [ 69%]
+tests/test_offer_strategies.py::test_two_for_amount_strategy[1-None] PASSED [ 71%]
+tests/test_offer_strategies.py::test_two_for_amount_strategy[2--0.39] PASSED [ 73%]
+tests/test_offer_strategies.py::test_two_for_amount_strategy[3--0.39] PASSED [ 75%]
+tests/test_offer_strategies.py::test_two_for_amount_strategy[4--0.78] PASSED [ 77%]
+tests/test_offer_strategies.py::test_two_for_amount_strategy[5--0.78] PASSED [ 79%]
+tests/test_offer_strategies.py::test_five_for_amount_strategy[4-None] PASSED [ 81%]
+tests/test_offer_strategies.py::test_five_for_amount_strategy[5--1.46] PASSED [ 83%]
+tests/test_offer_strategies.py::test_five_for_amount_strategy[11--2.92] PASSED [ 85%]
+tests/test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type[SpecialOfferType.THREE_FOR_TWO-ThreeForTwoStrategy] PASSED [ 87%]
+tests/test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type[SpecialOfferType.TEN_PERCENT_DISCOUNT-PercentageDiscountStrategy] PASSED [ 89%]
+tests/test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type[SpecialOfferType.TWO_FOR_AMOUNT-TwoForAmountStrategy] PASSED [ 91%]
+tests/test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type[SpecialOfferType.FIVE_FOR_AMOUNT-FiveForAmountStrategy] PASSED [ 93%]
+tests/test_offer_strategies.py::test_factory_returns_none_for_unknown_offer_type PASSED [ 95%]
+tests/test_offer_strategies.py::test_cart_ignores_offer_with_unknown_type PASSED [ 97%]
+tests/test_supermarket.py::test_ten_percent_discount PASSED              [100%]
+
+======================== 44 passed, 5 xfailed in 0.13s ========================
