@@ -18,6 +18,7 @@ O trabalho tem quatro frentes:
 .
 ├── src/                     código da aplicação (legado + refatorado)
 │   ├── discount_strategy.py contrato comum das promoções (commit zero)
+│   ├── combo_offer.py       estratégia do combo promocional (ComboOffer)
 │   └── offers/              estratégias de desconto e fábrica (Strategy + Factory Method)
 ├── tests/
 │   ├── conftest.py                  fixtures compartilhadas
@@ -43,7 +44,7 @@ Os documentos são escritos em Markdown e exportados para PDF na entrega final.
 
 ## Ambiente
 
-- Python 3.10 ou mais recente (desenvolvido e testado com 3.14)
+- Python 3.10 ou mais recente (testes e evidências gerados com 3.11.9 e 3.12.10)
 - Windows, Linux ou macOS
 
 ```bash
@@ -65,7 +66,7 @@ python -m pytest -v tests/test_combos.py
 python -m coverage run -m pytest && python -m coverage report
 ```
 
-Enquanto os combos não estiverem implementados, `test_combos.py` aparece como `xfail` (é o esperado).
+Resultado esperado: **55 testes passando**, sem `xfail` (caracterização, unidade das estratégias e combos), com cobertura de 99% em `src/`.
 
 Para rodar os testes de caracterização no código legado:
 
@@ -73,6 +74,22 @@ Para rodar os testes de caracterização no código legado:
 git checkout v0-legado -- src && python -m pytest tests/test_comportamento_legado.py
 git checkout HEAD -- src
 ```
+
+## Combos promocionais
+
+Regra nova: comprando todos os produtos de um combo, o cliente ganha 10% de desconto sobre os itens que formam combos completos.
+
+```python
+teller.add_combo_offer([toothbrush, toothpaste])            # 10% por padrão
+teller.add_combo_offer([toothbrush, toothpaste], percent=15.0)
+```
+
+- **Combos completos (D2):** o número de combos é a menor quantidade inteira entre os produtos; o excedente paga preço normal. Ex.: 2 escovas + 1 creme = 1 combo.
+- **Um desconto por produto (D3):** cada produto do combo gera uma linha `combo 10% off` no recibo.
+- **Convivência com outras ofertas (D1):** produto que já tem oferta individual não entra no combo, para não haver desconto duplicado.
+- **Extensibilidade:** `ComboOffer` implementa o mesmo contrato `DiscountStrategy` e foi adicionado sem alterar nenhuma estratégia existente (RNF02).
+
+Requisitos RF07–RF10 em [docs/requisitos.md](docs/requisitos.md); testes em `tests/test_combos.py`.
 
 ## Segurança
 
@@ -124,10 +141,13 @@ Decisões que guiaram a refatoração:
 - **Extensível (SOLID):** uma nova promoção é uma nova classe; o carrinho
   depende só da abstração `DiscountStrategy`.
 
-| Métrica | Legado (`v0-legado`) | Após a refatoração |
-|---------|----------------------|--------------------|
-| Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) |
-| Cobertura de `src/` | 71% | 98% |
+| Métrica | Legado (`v0-legado`) | Após a refatoração | Final (com combos) | Meta |
+|---------|----------------------|--------------------|--------------------|------|
+| Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) | 5 (A) | ≤ 10 (RNF06) |
+| Maior complexidade em `src/` | 13 (C) | 5 (A) | 6 (B) | ≤ 10 (RNF06) |
+| Cobertura de `src/` | 71% | 98% | 99% | ≥ 90% (RNF05) |
+| Testes passando | 1 | 44 (+ 5 `xfail`) | 55 | — |
+| "2 por 0,99" com 3 unidades | 2,175 (bug) | 1,68 | 1,68 | — |
 
 ## Licença
 
