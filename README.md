@@ -43,7 +43,7 @@ Os documentos são escritos em Markdown e exportados para PDF na entrega final.
 
 ## Ambiente
 
-- Python 3.10 ou mais recente (desenvolvido e testado com 3.14)
+- Python 3.10 ou mais recente (testes e evidências gerados com 3.11.9 e 3.12.10)
 - Windows, Linux ou macOS
 
 ```bash
