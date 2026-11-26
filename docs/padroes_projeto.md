@@ -309,7 +309,31 @@ Promoções que envolvem **vários produtos**, como o combo, implementam
 `DiscountStrategy` diretamente, já que `calculate` recebe todas as quantidades
 do carrinho.
 
-<!-- Seção do combo: P4 -->
+### O combo como prova (P4)
+
+O combo foi a primeira promoção nova depois da refatoração e entrou **sem
+alterar nenhuma estratégia existente nem o `ShoppingCart`** (RNF02):
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/combo_offer.py` | **Novo:** `ComboOffer`, que implementa `DiscountStrategy` |
+| `src/teller.py` | **Adição:** `add_combo_offer(products, percent=10.0)` e o cálculo dos combos |
+| `src/offers/`, `src/shopping_cart.py` | **Nenhuma linha alterada** |
+
+Regras do combo e convivência com outras ofertas:
+
+- **Combos completos (D2):** nº de combos = menor quantidade inteira entre os
+  produtos; as unidades excedentes pagam o preço normal.
+- **Um desconto por produto (D3):** 10% sobre o preço de cada produto do combo,
+  vezes o nº de combos. `Receipt` e `ReceiptPrinter` não mudaram.
+- **Sem desconto duplicado com oferta individual (D1):** produto que já tem
+  oferta própria não participa de combo.
+- **Sem desconto duplicado entre combos:** quando dois combos compartilham um
+  produto, as unidades usadas por um combo são abatidas antes do próximo, na
+  ordem de cadastro.
+
+Testes: `tests/test_combos.py` (13 casos), incluindo combo incompleto, múltiplos
+combos, excedentes, quantidade fracionada, três produtos e combos sobrepostos.
 
 ## 7. Correção do bug do `TWO_FOR_AMOUNT` (decisão D6)
 
