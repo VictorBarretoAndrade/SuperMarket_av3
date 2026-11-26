@@ -36,7 +36,14 @@ class Teller:
             if product not in self.offers
         }
         for combo in self.combo_offers:
-            for discount in combo.calculate(eligible_quantities, self.catalog):
+            discounts = combo.calculate(eligible_quantities, self.catalog)
+            if not discounts:
+                continue
+            # Abate as unidades já usadas para evitar desconto duplicado entre combos.
+            used = combo.complete_combos(eligible_quantities)
+            for product in combo.products:
+                eligible_quantities[product] -= used
+            for discount in discounts:
                 receipt.add_discount(discount)
 
         return receipt

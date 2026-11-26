@@ -5,7 +5,20 @@
 Evidências brutas: `docs/evidencias/seguranca/antes/` e `docs/evidencias/seguranca/depois/`, geradas por `python scripts/security_audit.py antes|depois`.
 
 ## 1. Ambiente e versões
-<!-- copiar de ambiente.txt -->
+
+Ambas as execuções (`antes` e `depois`) foram realizadas no mesmo ambiente virtual e com as mesmas versões de ferramentas:
+
+| Item | Etapa `antes` | Etapa `depois` |
+|------|---------------|----------------|
+| Data/hora | `2026-11-25T17:21:17` | `2026-11-25T23:22:26` |
+| Commit | `2ae7e3d` | `e55ff79` |
+| Python | `3.11.9` | `3.11.9` |
+| Sistema operacional | `Windows-10-10.0.26200-SP0` | `Windows-10-10.0.26200-SP0` |
+| Bandit | `1.9.4` | `1.9.4` |
+| pip-audit | `2.10.1` | `2.10.1` |
+| Safety | `3.8.1` | `3.8.1` |
+
+> Fontes: `docs/evidencias/seguranca/antes/ambiente.txt` e `docs/evidencias/seguranca/depois/ambiente.txt`.
 
 ## 2. Escopo e comandos
 
@@ -16,6 +29,12 @@ Evidências brutas: `docs/evidencias/seguranca/antes/` e `docs/evidencias/segura
 | Safety | Dependências (base Safety DB) | `python -m safety scan` (exige login) / `safety check -r requirements.txt` (depreciado) |
 
 ## 3. Linha de base (antes)
+
+Executada antes da refatoração (P3) e da implementação dos combos (P4), no commit `2ae7e3d` (`docs/evidencias/seguranca/antes/`):
+
+- **Bandit (`bandit.txt` / `bandit.json`):** `exit code: 0`, **0 alertas** (`High: 0`, `Medium: 0`, `Low: 0`, `Undefined: 0`), `0` supressões `#nosec` e `0` arquivos pulados. Escopo analisado: **149 linhas de código** em **6 arquivos** (`catalog.py`, `discount_strategy.py`, `model_objects.py`, `receipt.py`, `shopping_cart.py` e `teller.py`).
+- **pip-audit (`pip-audit.txt`):** `exit code: 0`, `No known vulnerabilities found` para as dependências declaradas em `requirements.txt` (`pytest`, `approvaltests`, `pytest-approvaltests`, `coverage`).
+- **Safety (`safety.txt`):** `exit code: 0`, **85 dependências** testadas (`requirements.txt`, `.venv\pyvenv.cfg` e 2 `pyproject.toml` de exemplo do pacote `stevedore` no `.venv`). Resultado: **26 vulnerabilidades encontradas, 26 ignoradas pela política padrão** (`Stage.development`), triadas na seção 4.
 
 ## 4. Triagem dos achados
 
@@ -32,5 +51,25 @@ Evidências brutas: `docs/evidencias/seguranca/antes/` e `docs/evidencias/segura
 
 ## 5. Reavaliação (depois) e comparação
 
+Executada após a integração da refatoração com padrões de projeto (P3, pacote `src/offers/`), da correção do bug `TWO_FOR_AMOUNT` (D6) e da implementação dos combos promocionais (P4, `src/combo_offer.py` e `src/teller.py`), no commit `e55ff79` (`docs/evidencias/seguranca/depois/`):
+
+| Ferramenta / Métrica | Antes (`2ae7e3d`) | Depois (`e55ff79`) | Variação / Análise |
+|----------------------|-------------------|--------------------|--------------------|
+| Bandit — arquivos em `src/` | 6 | 14 | +8 arquivos (`src/combo_offer.py` e `src/offers/*`) |
+| Bandit — linhas de código (LOC) | 149 | 344 | +195 linhas analisadas |
+| Bandit — alertas (High / Medium / Low) | 0 / 0 / 0 | 0 / 0 / 0 | Sem regressões; nenhum `#nosec` usado em `src/` |
+| pip-audit (`requirements.txt`) | 0 vulnerabilidades | 0 vulnerabilidades | Inalterado; nenhuma dependência nova adicionada |
+| Safety — dependências testadas | 85 | 85 | Mesmo conjunto de dependências do ambiente |
+| Safety — vulnerabilidades (ativas / ignoradas) | 0 / 26 | 0 / 26 | Inalterado; mesmos achados de ambiente/spec já triados na seção 4 |
+
+**Conclusão da comparação:**
+- O código de produção em `src/` mais que dobrou de tamanho (`149 → 344` LOC, com 8 novos módulos) sem introduzir nenhum achado de segurança estática (`0` alertas no Bandit em todas as severidades e `0` supressões `#nosec`).
+- Nenhuma nova biblioteca de terceiros foi adicionada ao runtime da aplicação (que continua usando apenas a biblioteca padrão do Python) nem a `requirements.txt`, mantendo `pip-audit` zerado e o resultado do `safety` idêntico ao da linha de base.
+- O critério do **RNF03** (Bandit sem achados `High` e dependências sem vulnerabilidades não triadas) foi plenamente atendido.
+
 ## 6. Limitações
-<!-- ex.: Safety scan exige conta; ausência de alertas não prova segurança; requirements sem versões fixas -->
+
+- **Ausência de alertas não prova ausência de falhas:** o Bandit realiza análise estática (AST) voltada a padrões comuns de insegurança (injeção, desserialização insegura, criptografia fraca etc.), mas não detecta erros de regra de negócio ou lógica (como o bug legado de `TWO_FOR_AMOUNT` ou desconto duplicado entre combos sobrepostos), que dependem de revisão e testes automatizados.
+- **Dependências sem versão fixa em `requirements.txt`:** os pacotes estão declarados sem pinagem (`pytest` em vez de `pytest==9.2.0`), o que reduz a reprodutibilidade estrita em novas instalações e gera o alerta `unpinned-specification` no Safety.
+- **Dependência de conta e política padrão no Safety 3.x:** `safety scan` exige login em uma conta Safety (sem autenticação, o script recorre ao comando depreciado `safety check`), exibe avisos internos de depreciação da biblioteca `authlib`, ignora vulnerabilidades de `.venv` por padrão (`environment-dependency`) e não inclui pontuação CVSS no plano gratuito — exigindo inspeção complementar (`--output json` + `pip-audit`).
+- **Escopo da auditoria:** o Bandit foi executado sobre `src/` (código da aplicação), não incluindo `tests/` nem `scripts/` (em `scripts/security_audit.py`, o uso de `subprocess` com lista fixa de argumentos está documentado com `# nosec B404` / `# nosec B603`). Em `requirements.txt` constam apenas ferramentas de teste e cobertura, pois o código de produção não possui dependências externas.
