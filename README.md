@@ -17,12 +17,14 @@ O trabalho tem quatro frentes:
 ```
 .
 ├── src/                     código da aplicação (legado + refatorado)
-│   └── discount_strategy.py contrato comum das promoções (commit zero)
+│   ├── discount_strategy.py contrato comum das promoções (commit zero)
+│   └── offers/              estratégias de desconto e fábrica (Strategy + Factory Method)
 ├── tests/
 │   ├── conftest.py                  fixtures compartilhadas
 │   ├── test_supermarket.py          teste original do kata
 │   ├── test_comportamento_legado.py testes de caracterização
-│   └── test_combos.py               testes de aceitação dos combos
+│   ├── test_combos.py               testes de aceitação dos combos
+│   └── test_offer_strategies.py     testes unitários das estratégias
 ├── scripts/security_audit.py        roda Bandit, pip-audit e Safety e salva as evidências
 ├── docs/
 │   ├── divisao_tarefas.md           divisão do time e decisões D1–D7
@@ -98,7 +100,32 @@ Commits pequenos, em inglês, no formato `tipo: descrição` (`feat`, `fix`, `do
 
 ## Decisões arquiteturais
 
-_A completar pelo time (P3/P1): resumo dos padrões aplicados, com link para [docs/padroes_projeto.md](docs/padroes_projeto.md)._
+O cálculo de ofertas saiu de um único método com uma cadeia de `if`s
+(`ShoppingCart.handle_offers`, complexidade 13) para **uma classe por
+modalidade de oferta**. Detalhes, diagramas antes/depois e testes
+relacionados: [docs/padroes_projeto.md](docs/padroes_projeto.md).
+
+| Padrão | Onde | Problema que resolve |
+|--------|------|----------------------|
+| **Strategy** | `src/offers/` (`ThreeForTwoStrategy`, `PercentageDiscountStrategy`, `TwoForAmountStrategy`, `FiveForAmountStrategy`) | Cada regra de desconto fica isolada numa classe que implementa o contrato `DiscountStrategy` e pode ser testada sozinha. |
+| **Factory Method** | `src/offers/factory.py` (`DiscountStrategyFactory`) | Concentra a escolha da estratégia pelo `SpecialOfferType`, eliminando os `if`s sobre o tipo de oferta. |
+| **Template Method** | `src/offers/single_product_offer.py` (`SingleProductOfferStrategy`) | Reúne os passos comuns das ofertas de um produto; cada oferta implementa só o cálculo do desconto. |
+
+Decisões que guiaram a refatoração:
+
+- **API pública preservada (D7):** `Teller`, `ShoppingCart.handle_offers`,
+  `Receipt` e demais classes mantêm nomes e assinaturas; os testes de
+  caracterização passam sem alteração.
+- **Comportamento idêntico ao legado:** as fórmulas mantêm a ordem de
+  operações original, inclusive o bug do `TWO_FOR_AMOUNT`, que é corrigido
+  depois num commit `fix:` separado (D6).
+- **Extensível (SOLID):** uma nova promoção é uma nova classe; o carrinho
+  depende só da abstração `DiscountStrategy`.
+
+| Métrica | Legado (`v0-legado`) | Após a refatoração |
+|---------|----------------------|--------------------|
+| Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) |
+| Cobertura de `src/` | 71% | 98% |
 
 ## Licença
 
