@@ -1,0 +1,11 @@
+﻿============================= test session starts =============================
+platform win32 -- Python 3.12.10, pytest-9.2.0, pluggy-1.7.0 -- D:\VSCode repositorios\SuperMarket_av3\.venv\Scripts\python.exe
+cachedir: .pytest_cache
+rootdir: D:\VSCode repositorios\SuperMarket_av3
+configfile: pytest.ini
+plugins: approvaltests-21.1.0, approvaltests-0.2.4
+collecting ... collected 1 item
+
+tests/test_supermarket.py::test_ten_percent_discount PASSED              [100%]
+
+============================== 1 passed in 0.02s ==============================

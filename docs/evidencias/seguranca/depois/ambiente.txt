@@ -1,0 +1,14 @@
+data: 2026-11-25T23:22:26
+etapa: depois
+commit: e55ff79
+python: 3.11.9
+so: Windows-10-10.0.26200-SP0
+bandit: __main__.py 1.9.4
+  python version = 3.11.9 (tags/v3.11.9:de54cf5, Apr  2 2024, 10:12:12) [MSC v.1938 64 bit (AMD64)]
+pip-audit: pip-audit 2.10.1
+safety: safety, version 3.8.1
+D:\GitHub\SuperMarket_av3\.venv\Lib\site-packages\safety\auth\main.py:5: AuthlibDeprecationWarning: authlib.jose module is deprecated, please use joserfc instead.
+It will be compatible before version 2.0.0.
+  from authlib.jose.errors import ExpiredTokenError
+D:\GitHub\SuperMarket_av3\.venv\Lib\site-packages\authlib\integrations\httpx_client\assertion_client.py:5: AuthlibDeprecationWarning: The httpx module is deprecated; please use httpx2 instead.
+  from ._compat import httpx2

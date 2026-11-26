@@ -1,0 +1,23 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Test / coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# ApprovalTests: arquivos "received" são gerados quando o teste falha
+*.received.txt
+
+# IDE / SO
+.vscode/
+.idea/
+desktop.ini
+Thumbs.db
+.DS_Store
