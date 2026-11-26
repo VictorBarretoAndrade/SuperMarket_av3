@@ -47,7 +47,7 @@ Executada antes da refatoração (P3) e da implementação dos combos (P4), no c
 | Safety | `pip==24.0` em `.venv\pyvenv.cfg` (7 de 26 ignoradas por `environment-dependency`) | Não informada pelo Safety (ignorada pela política) | Não | Instalador padrão do `.venv` (requerido também por `pip-audit` via `pip_api`); não faz parte do runtime da aplicação. Higiene opcional: `python -m pip install --upgrade pip`. |
 | Safety | `setuptools==65.5.0` em `.venv\pyvenv.cfg` (5 de 26 ignoradas por `environment-dependency`) | Não informada pelo Safety (ignorada pela política) | Não | Ferramenta de empacotamento padrão criada com o `.venv` do Python 3.11; não faz parte do runtime da aplicação. Higiene opcional: `python -m pip install --upgrade setuptools`. |
 
-> **Nota sobre a inspeção do Safety:** o relatório padrão (`docs/evidencias/seguranca/antes/safety.txt`) resume o resultado como `26 vulnerabilities found, 26 ignored due to policy`. O detalhamento acima foi obtido inspecionando a saída estruturada via `python -m safety scan --output json` e cruzando com `pip-audit` no `.venv`, sem necessidade de alterar a política padrão (`.safety-policy.yml`).
+> **Nota sobre a inspeção do Safety:** o relatório padrão (`docs/evidencias/seguranca/antes/safety.txt`) resume o resultado como `26 vulnerabilities found, 26 ignored due to policy`. O detalhamento acima foi obtido inspecionando a saída estruturada via `python -m safety scan --output json` e cruzando com `pip-audit` no `.venv`, sem necessidade de alterar a política padrão (`.safety-policy.yml`). Como melhorias opcionais de higiene do ambiente: fixar as versões em `requirements.txt` (`pytest==9.2.0`, `approvaltests==21.1.0`, `pytest-approvaltests==0.2.4`, `coverage==7.17.5`) elimina o alerta `unpinned-specification`, e atualizar `pip` e `setuptools` no `.venv` (`python -m pip install --upgrade pip setuptools`) elimina 12 das 25 vulnerabilidades de ambiente (restando apenas `filelock`, trazido pelo próprio `safety`).
 
 ## 5. Reavaliação (depois) e comparação
 
@@ -73,3 +73,25 @@ Executada após a integração da refatoração com padrões de projeto (P3, pac
 - **Dependências sem versão fixa em `requirements.txt`:** os pacotes estão declarados sem pinagem (`pytest` em vez de `pytest==9.2.0`), o que reduz a reprodutibilidade estrita em novas instalações e gera o alerta `unpinned-specification` no Safety.
 - **Dependência de conta e política padrão no Safety 3.x:** `safety scan` exige login em uma conta Safety (sem autenticação, o script recorre ao comando depreciado `safety check`), exibe avisos internos de depreciação da biblioteca `authlib`, ignora vulnerabilidades de `.venv` por padrão (`environment-dependency`) e não inclui pontuação CVSS no plano gratuito — exigindo inspeção complementar (`--output json` + `pip-audit`).
 - **Escopo da auditoria:** o Bandit foi executado sobre `src/` (código da aplicação), não incluindo `tests/` nem `scripts/` (em `scripts/security_audit.py`, o uso de `subprocess` com lista fixa de argumentos está documentado com `# nosec B404` / `# nosec B603`). Em `requirements.txt` constam apenas ferramentas de teste e cobertura, pois o código de produção não possui dependências externas.
+
+## 7. Registro da implementação dos combos (P4 — D1 a D7)
+
+### Estado antes da alteração
+- `src/discount_strategy.py` já definia a interface abstrata `DiscountStrategy.calculate(product_quantities, catalog) -> list[Discount]` (D5).
+- `src/teller.py` cadastrava apenas ofertas individuais (`self.offers` via `add_special_offer`) e delegava o cálculo delas para `the_cart.handle_offers(...)`.
+- `src/shopping_cart.py` (dono: P3) concentrava as ofertas legadas (incluindo o bug caracterizado de `TWO_FOR_AMOUNT`, D6), portanto não foi alterado pela frente de combos.
+- `tests/test_combos.py` tinha 5 testes de aceitação marcados com `pytestmark = pytest.mark.xfail(raises=AttributeError, ...)` aguardando `teller.add_combo_offer`.
+
+### Estratégia adotada
+- **Padrão Strategy isolado (`src/combo_offer.py`):** criar `ComboOffer(DiscountStrategy)` sem alterar `ShoppingCart`, `Receipt`, `ReceiptPrinter` ou as estratégias existentes em `src/offers/` (D3, D5, D6, D7 e RNF02).
+- **Filtro de elegibilidade no checkout (D1):** em `Teller.checks_out_articles_from`, montar `eligible_quantities` excluindo qualquer produto presente em `self.offers`, garantindo o funcionamento independentemente da ordem de cadastro entre `add_special_offer` e `add_combo_offer`.
+- **Quantidade inteira mínima (D2):** calcular `num_combos = min(int(product_quantities.get(p, 0)) for p in self.products)`; unidades ou frações excedentes pagam preço normal.
+- **Um `Discount` por produto (D3):** gerar um `Discount` por produto do combo (`-num_combos * unit_price * (percent / 100.0)`), preservando a compatibilidade com `Receipt` e `ReceiptPrinter`.
+- **Proteção contra entradas de borda e combos sobrepostos:** deduplicar a lista de produtos (`dict.fromkeys`), retornar lista vazia quando a lista de produtos for vazia ou `percent <= 0`, e abater de `eligible_quantities` as unidades consumidas por cada combo aplicado (evitando desconto duplicado quando dois combos compartilham o mesmo produto).
+
+### Alterações e validação
+1. **`src/combo_offer.py` (criado):** classe `ComboOffer(DiscountStrategy)` com `complete_combos(product_quantities)` e `calculate(product_quantities, catalog)` (D2, D3 e D5).
+2. **`src/teller.py` (alterado):** adicionado `self.combo_offers`, método público `add_combo_offer(self, products, percent=10.0)` (D4), filtro D1 e abatimento de unidades consumidas entre combos sobrepostos em `checks_out_articles_from`.
+3. **`tests/test_combos.py` (alterado):** removido `pytestmark = pytest.mark.xfail(...)`, mantidos os 5 testes originais e adicionados 8 testes cobrindo D3 + `ReceiptPrinter`, D4 (percentual customizado), D1 com ordem inversa, D2 com quantidade fracionária (`KILO`), combo com 3 produtos, combo vazio e dois combos com produto em comum (1 e 2 unidades do item compartilhado).
+4. **Validação (`python -m pytest -v`):** **57 passed, 0 failed** (`13` de combo + `24` de caracterização/aprovação da P2 + `19` unitários das estratégias da P3 + `1` legado), com **99%** de cobertura em `src/` (`100%` em `src/combo_offer.py`).
+
