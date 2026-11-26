@@ -2,9 +2,8 @@
 
 > Elemento "Lições aprendidas" da documentação inspirada no MPS.BR (seção 6 do
 > enunciado): limitações e decisões relevantes, como reflexão sobre o processo.
-> Documento do time: cada integrante complementa a sua frente. Versão
-> preliminar, escrita antes da entrega dos combos (P4); as seções marcadas como
-> _a completar_ devem ser revisadas no fechamento (E6).
+> Documento do time, escrito no fechamento (E6), depois da refatoração, da
+> correção do bug `TWO_FOR_AMOUNT`, dos combos e da reavaliação de segurança.
 
 ## 1. Processo e organização do time
 
@@ -13,8 +12,8 @@
   D1–D7. Com isso, testes (P2), refatoração (P3), combos (P4) e análise (P1)
   puderam começar em paralelo, e o único ponto de dependência passou a ser a
   ordem de merge.
-- **Dono por arquivo evitou conflitos.** Até aqui, os merges em `development`
-  não tiveram conflito porque cada arquivo tinha um responsável e os arquivos
+- **Dono por arquivo evitou conflitos.** Os merges em `development` não
+  tiveram conflito porque cada arquivo tinha um responsável e os arquivos
   compartilhados só recebiam adições.
 - **Documentos de processo precisam concordar entre si.** `divisao_tarefas.md`
   colocava a correção do bug `TWO_FOR_AMOUNT` depois dos combos, enquanto o
@@ -81,16 +80,43 @@
   num commit `fix:` próprio, com o teste atualizado no mesmo commit. A
   comparação com o legado confirmou que só os casos de "2 por valor" com
   quantidade ímpar mudaram.
-- **Limitação:** a fábrica foi pensada para ofertas de um único produto
-  (`Offer`). O combo, que envolve vários produtos, não se encaixa diretamente
-  nela; a forma de integração precisa ser combinada com a P4 (RNF02).
+- **Uma abstração não precisa servir para tudo.** A fábrica foi pensada para
+  ofertas de um único produto (`Offer`), e o combo envolve vários produtos.
+  Em vez de forçar o combo na fábrica, ele implementa `DiscountStrategy`
+  diretamente e é registrado pelo `Teller` (`add_combo_offer`). O contrato
+  comum foi o que garantiu a extensão; o texto do RNF02, que previa "registro
+  na fábrica", precisou ser ajustado depois.
 
-## 5. Segurança (P4)
+## 5. Combos e segurança (P4)
+
+### Combos
+
+- **A arquitetura aceitou a promoção nova sem mexer no que existia.** O combo
+  entrou com um arquivo novo (`src/combo_offer.py`) e adições no `Teller`;
+  nenhuma linha de `src/offers/` nem do `ShoppingCart` foi alterada, e os 24
+  testes de caracterização continuaram passando (RNF02).
+- **Testes de aceitação escritos antes guiaram a implementação.** Os 5 testes
+  de combo do commit zero (D1, D2, D3) definiram o comportamento esperado; ao
+  implementar, bastou fazê-los passar e remover o `xfail`.
+- **Revisão encontra o que os testes não previram.** Na revisão do merge do
+  combo, um caso fora dos testes apareceu: dois combos que compartilham um
+  produto (ex.: escova + creme e escova + fio) aplicavam desconto duas vezes na
+  mesma escova, contrariando a regra de "evitar desconto duplicado". A correção
+  passou a abater as unidades usadas por cada combo antes do próximo, e o caso
+  ganhou testes próprios. Combinações entre promoções merecem uma lista de
+  cenários desde a especificação.
+
+### Segurança
 
 - **Ausência de alertas não é prova de segurança.** Bandit e pip-audit não
-  encontraram problemas na linha de base, mas o código de produção usa só a
-  biblioteca padrão e as ferramentas cobrem padrões e bases de vulnerabilidade
-  específicos.
+  encontraram problemas antes nem depois das mudanças, mas o código de produção
+  usa só a biblioteca padrão e as ferramentas cobrem padrões e bases de
+  vulnerabilidade específicos. O próprio desconto duplicado entre combos, um
+  erro de regra de negócio, passaria despercebido por todas elas.
+- **Comparar antes e depois dá contexto ao resultado.** O código de `src/` mais
+  que dobrou (149 -> 344 linhas, 8 módulos novos) sem nenhum alerta novo no
+  Bandit, e nenhuma dependência foi adicionada, então pip-audit e Safety
+  ficaram iguais à linha de base.
 - **Ler além do resumo da ferramenta.** O Safety resumiu o resultado como
   "26 vulnerabilities found, 26 ignored due to policy". Só a saída detalhada
   (`--output json`) mostrou que eram dependências das próprias ferramentas e do
@@ -100,17 +126,20 @@
   precisa constar nas evidências para que outra pessoa consiga reproduzir a
   análise.
 
-_A completar pela P4 após a reavaliação "depois" e a entrega dos combos._
-
 ## 6. Reprodutibilidade e ambiente
 
 - **Cada integrante usou um ambiente diferente.** As evidências registram
-  Python 3.12.10 (testes, P2) e 3.11.9 (segurança, P4, e refatoração, P3),
-  enquanto o README cita 3.14. Os resultados foram os mesmos, mas a versão
-  usada na entrega final deve ser uma só e estar no README (RNF04).
-- **Dependências sem versão fixa** (`requirements.txt`) geraram alerta no Safety
-  e dificultam reproduzir o ambiente. Fixar as versões é uma melhoria simples
-  para o fechamento.
+  Python 3.12.10 (testes, P2) e 3.11.9 (segurança, P4, e refatoração, P3), e o
+  README chegou a citar 3.14, versão que ninguém usou. Os resultados foram os
+  mesmos, e o README foi corrigido para as versões realmente testadas, mas o
+  ideal é definir uma versão única desde o início (RNF04).
+- **Dependências sem versão fixa** (`requirements.txt`) geraram o alerta
+  `unpinned-specification` no Safety, antes e depois, e dificultam reproduzir o
+  ambiente. Ficou registrado como risco remanescente.
+- **Evidência é um retrato de um momento.** As evidências finais de teste
+  foram geradas com 55 testes; minutos depois, a correção dos combos
+  sobrepostos acrescentou 2 testes. Evidências precisam ser geradas de novo
+  depois do último merge de código, não em paralelo a ele.
 
 ## 7. O que faríamos diferente
 
@@ -119,6 +148,19 @@ _A completar pela P4 após a reavaliação "depois" e a entrega dos combos._
 - Combinar a integração do combo com a fábrica de estratégias antes de começar
   a refatoração, em vez de depois.
 - Fixar a versão do Python e das dependências no commit zero.
+- Listar, já nos requisitos, os cenários de combinação entre promoções
+  (combo com oferta individual, combos que compartilham produtos), em vez de
+  descobri-los na revisão.
+- Gerar as evidências finais só depois do último merge de código.
 
-_A completar pelo time no fechamento: resultado final dos combos, segurança
-"depois" e comparativo final de testes._
+## 8. Resultado final
+
+| Métrica | Legado (`v0-legado`) | Final (`development`) |
+|---------|----------------------|-----------------------|
+| Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) |
+| Maior complexidade em `src/` | 13 (`handle_offers`) | 8 (B, `Teller.checks_out_articles_from`) |
+| Cobertura de `src/` | 71% | 99% |
+| Testes passando | 1 | 57 (0 falhas, 0 `xfail`) |
+| "2 por 0,99" com 3 itens (bug D6) | 2,175 | 1,68 |
+| Alertas do Bandit (High/Medium/Low) | 0 / 0 / 0 | 0 / 0 / 0 |
+| Vulnerabilidades no pip-audit | 0 | 0 |
