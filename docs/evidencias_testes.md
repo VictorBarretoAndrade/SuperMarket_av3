@@ -50,12 +50,12 @@ git checkout HEAD -- src
 
 Após os merges da refatoração (P3, Strategy + Factory Method + Template Method), dos combos promocionais (P4) e da correção de `TWO_FOR_AMOUNT`, toda a suíte executou sem nenhuma falha nem `xfail`.
 
-- **Comando**: `python -m pytest -v` (na branch `development`, Python `3.12.10` em `.venv`).
-- **Resultado observado** ([pytest_final.txt](evidencias/testes/pytest_final.txt)): **`55 passed in 0.52s`** (`0 failed`, `0 xfailed`):
+- **Comando**: `python -m pytest -v` (na branch `development`, Python `3.11.9` em `.venv`, após a correção dos combos sobrepostos).
+- **Resultado observado** ([pytest_final.txt](evidencias/testes/pytest_final.txt)): **`57 passed in 0.20s`** (`0 failed`, `0 xfailed`):
   - `tests/test_supermarket.py`: `1 passed`
   - `tests/test_comportamento_legado.py`: `24 passed`
   - `tests/test_offer_strategies.py`: `19 passed`
-  - `tests/test_combos.py`: `11 passed`
+  - `tests/test_combos.py`: `13 passed` (inclui os 2 testes de combos que compartilham produto)
 
 ### Correção do bug `TWO_FOR_AMOUNT` (P3, decisão D6)
 
@@ -76,8 +76,8 @@ Justificativa e trecho antes/depois: [padroes_projeto.md, seção 7](padroes_pro
 | `tests/test_supermarket.py` | 1 passed | 1 passed | 1 passed |
 | `tests/test_comportamento_legado.py` | — (não existia na tag; 24 passed ao rodar contra `v0-legado`) | 24 passed | 24 passed |
 | `tests/test_offer_strategies.py` | — | — | 19 passed |
-| `tests/test_combos.py` | — | 5 xfailed (esperado) | 11 passed |
-| **Total** | **1 passed** | **25 passed, 5 xfailed** | **55 passed** |
+| `tests/test_combos.py` | — | 5 xfailed (esperado) | 13 passed |
+| **Total** | **1 passed** | **25 passed, 5 xfailed** | **57 passed** |
 
 ## 5. Cobertura
 
@@ -112,7 +112,7 @@ python -m coverage report -m
 ```
 
 - **Cobertura em `src/`** ([cobertura_final_src.txt](evidencias/testes/cobertura_final_src.txt)):
-  - `src/combo_offer.py`: `100%` (19/19)
+  - `src/combo_offer.py`: `100%` (21/21)
   - `src/discount_strategy.py`: `100%` (4/4)
   - `src/model_objects.py`: `100%` (27/27)
   - `src/offers/__init__.py`: `100%` (0/0)
@@ -124,9 +124,9 @@ python -m coverage report -m
   - `src/offers/two_for_amount.py`: `100%` (12/12)
   - `src/receipt.py`: `100%` (27/27)
   - `src/shopping_cart.py`: `100%` (26/26)
-  - `src/teller.py`: `97%` (28/29; apenas `product_with_name` na linha 45)
+  - `src/teller.py`: `97%` (34/35; apenas `product_with_name` na linha 52)
   - `src/catalog.py`: `60%` (3/5; métodos base abstratos que lançam exceção)
-  - **Total em `src/`**: **99%** (`212` declarações, `3` não cobertas).
+  - **Total em `src/`**: **99%** (`220` declarações, `3` não cobertas).
 
 - **Cobertura completa (`python -m coverage run -m pytest && python -m coverage report`)** ([cobertura_final_completa.txt](evidencias/testes/cobertura_final_completa.txt)):
-  - **Total geral (`src/` + `tests/`)**: **99%** (`593` declarações, `3` não cobertas — `100%` em todos os arquivos de `tests/`).
+  - **Total geral (`src/` + `tests/`)**: **99%** (`621` declarações, `3` não cobertas — `100%` em todos os arquivos de `tests/`).
