@@ -238,12 +238,21 @@ classDiagram
         +add_item_quantity(product, quantity)
         +handle_offers(receipt, offers, catalog)
     }
+    class ComboOffer {
+        +products: list~Product~
+        +percent: float
+        +calculate(product_quantities, catalog) list~Discount~
+    }
     class Teller {
+        +offers: dict~Product, Offer~
+        +combo_offers: list~ComboOffer~
         +add_special_offer(offer_type, product, argument)
+        +add_combo_offer(products, percent)
         +checks_out_articles_from(cart) Receipt
     }
 
     DiscountStrategy <|-- SingleProductOfferStrategy
+    DiscountStrategy <|-- ComboOffer
     SingleProductOfferStrategy <|-- ThreeForTwoStrategy
     SingleProductOfferStrategy <|-- PercentageDiscountStrategy
     SingleProductOfferStrategy <|-- TwoForAmountStrategy
@@ -252,7 +261,15 @@ classDiagram
     ShoppingCart ..> DiscountStrategyFactory : create(offer)
     ShoppingCart ..> DiscountStrategy : calculate()
     Teller --> ShoppingCart : handle_offers()
+    Teller --> ComboOffer : calculate() com produtos elegíveis (D1)
 ```
+
+O combo (`src/combo_offer.py`, P4) implementa `DiscountStrategy` diretamente,
+porque envolve vários produtos e não uma única `Offer`. Por isso ele não passa
+por `DiscountStrategyFactory`: o `Teller` guarda os combos cadastrados e os
+calcula depois das ofertas individuais, só com os produtos que não têm oferta
+própria (decisão D1). Nenhuma estratégia existente nem o `ShoppingCart` foram
+alterados para isso (RNF02).
 
 ## 5. Princípios SOLID aplicados
 
