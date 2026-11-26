@@ -41,17 +41,17 @@ Descontos aparecem no recibo como valores **negativos**. Comparações de valor 
 | Requisito | Implementação (após refatoração) | Teste | Evidência |
 |-----------|----------------------------------|-------|-----------|
 | RF01 | `Teller.checks_out_articles_from`, `Receipt.total_price` | `test_supermarket.py`, `test_comportamento_legado.py` | `docs/evidencias/testes/` |
-| RF02 | estratégia de 3 por 2 em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
-| RF03 | estratégia percentual em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
-| RF04 | estratégia de 2 por valor em `src/offers/` (+ commit `fix:` da D6) | `test_comportamento_legado.py` | `docs/evidencias/testes/`, `docs/evidencias_testes.md` |
-| RF05 | estratégia de 5 por valor em `src/offers/` | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF02 | `ThreeForTwoStrategy` (`src/offers/three_for_two.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_three_for_two_strategy` | `docs/evidencias/testes/` |
+| RF03 | `PercentageDiscountStrategy` (`src/offers/percentage_discount.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_percentage_discount_strategy` | `docs/evidencias/testes/` |
+| RF04 | `TwoForAmountStrategy` (`src/offers/two_for_amount.py`), corrigida no commit `fix:` da D6 | `test_comportamento_legado.py`, `test_offer_strategies.py::test_two_for_amount_strategy` | `docs/evidencias/testes/pytest_pos_fix_two_for_amount.txt`, `docs/padroes_projeto.md`, seção 7 |
+| RF05 | `FiveForAmountStrategy` (`src/offers/five_for_amount.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_five_for_amount_strategy` | `docs/evidencias/testes/` |
 | RF06 | `Receipt`, `ReceiptItem`, `tests/receipt_printer.py` | `test_comportamento_legado.py` + `tests/approved_files/` | `docs/evidencias/testes/` |
-| RF07 – RF10 | `src/combo_offer.py`, `Teller.add_combo_offer` | `test_combos.py` | `docs/evidencias/testes/` |
-| RF11 – RF12 | `Teller.add_special_offer`, fábrica de estratégias | `test_comportamento_legado.py` | `docs/evidencias/testes/` |
+| RF07 – RF10 | `src/combo_offer.py`, `Teller.add_combo_offer` (pendente: P4) | `test_combos.py` (ainda `xfail`) | `docs/evidencias/testes/` |
+| RF11 – RF12 | `Teller.add_special_offer`, `DiscountStrategyFactory` (`src/offers/factory.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type`, `test_offer_strategies.py::test_cart_ignores_offer_with_unknown_type` | `docs/evidencias/testes/` |
 | RNF01 | API pública (D7) | `test_comportamento_legado.py` em `v0-legado` e no `main` | `docs/evidencias_testes.md` (comparativo) |
-| RNF02 | `src/discount_strategy.py`, `src/offers/`, `src/combo_offer.py` | `test_combos.py` | `docs/padroes_projeto.md`, seção 6 |
+| RNF02 | `src/discount_strategy.py`, `src/offers/` (`SingleProductOfferStrategy`), `src/combo_offer.py` (pendente: P4) | `test_combos.py` | `docs/padroes_projeto.md`, seção 6 |
 | RNF03 | `scripts/security_audit.py` | — | `docs/seguranca_antes_depois.md`, `docs/evidencias/seguranca/` |
 | RNF04 | `README.md`, `requirements*.txt` | execução do zero | `README.md` |
 | RNF05 | — | `coverage` | `docs/evidencias_testes.md`, seção 5 |
-| RNF06 | `src/` | `radon cc` | `docs/diagnostico_tecnico.md`, seção 3 (antes) |
+| RNF06 | `src/` | `radon cc` | `docs/diagnostico_tecnico.md`, seção 3 (antes: CC 13); `README.md`, Decisões arquiteturais (depois: CC 5) |
 | RNF07 | histórico do git | — | `git log`, tag `v0-legado` |
