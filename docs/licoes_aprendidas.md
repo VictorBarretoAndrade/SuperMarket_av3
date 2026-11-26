@@ -32,8 +32,21 @@
   `shopping_cart.py`) transformou "o código é ruim" em metas objetivas (RNF05,
   RNF06), que depois puderam ser conferidas.
 - **Requisitos com critério verificável viram critério de aceitação.** Os
-  critérios da etapa E3 no plano de contingência foram checados um a um antes
-  do merge da refatoração.
+  critérios da etapa E3 do plano de contingência podem ser conferidos no
+  histórico: os testes de caracterização não mudaram durante a refatoração, a
+  complexidade de `handle_offers` caiu de 13 para 5 e a cobertura de `src/`
+  subiu para 98%. Faltou registrar essa conferência no momento do merge (por
+  exemplo, na descrição do merge ou num checklist), o que deixaria a evidência
+  explícita em vez de reconstruída depois.
+- **Achado de diagnóstico sem teste continua sendo hipótese.** O problema #4
+  (produto vendido a peso com quantidade fracionada em "3 por 2", ex.: 3,5 kg)
+  não ganhou teste de caracterização, então o risco R7 do plano segue aberto.
+  Cada achado do diagnóstico deveria ter virado, já na análise, um pedido de
+  teste para a P2.
+- **Rastreabilidade precisa acompanhar o código.** O commit `fix:` da D6
+  renomeou o teste do bug, e a matriz de requisitos e o plano passaram a citar
+  um teste que não existia mais. Referências a nomes de teste devem ser
+  revisadas a cada merge que mexe nos testes.
 
 ## 3. Testes de caracterização (P2)
 
