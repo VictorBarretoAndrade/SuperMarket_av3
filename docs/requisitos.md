@@ -29,7 +29,7 @@ Descontos aparecem no recibo como valores **negativos**. Comparações de valor 
 | ID | Descrição | Critério verificável |
 |----|-----------|----------------------|
 | RNF01 | A API pública existente é preservada (D7) | Testes de caracterização passam sem alteração na tag `v0-legado` e no `main` final (exceto o teste do bug da D6, atualizado no commit `fix:`) |
-| RNF02 | Extensibilidade: nova promoção sem alterar as existentes | O combo entra como uma nova classe `DiscountStrategy` + registro na fábrica. O diff do commit `feat:` do combo não altera nenhuma estratégia existente |
+| RNF02 | Extensibilidade: nova promoção sem alterar as existentes | O combo entra como uma nova classe `DiscountStrategy`, registrada pelo `Teller` (`add_combo_offer`) em vez da fábrica, porque envolve vários produtos. O diff do commit `feat:` do combo não altera nenhuma estratégia existente |
 | RNF03 | Segurança: sem achados de severidade alta no Bandit e sem dependência vulnerável | `python scripts/security_audit.py depois`: Bandit sem `High`; pip-audit e Safety sem vulnerabilidades conhecidas, ou cada achado triado e justificado em `docs/seguranca_antes_depois.md` |
 | RNF04 | Reprodutibilidade | Seguindo só o README, um ambiente novo (Python ≥ 3.10) instala as dependências e roda `python -m pytest` com sucesso |
 | RNF05 | Testabilidade / cobertura | Cobertura de linhas de `src/` ≥ 90% (`python -m coverage report`). No legado era 71%, com 41% em `shopping_cart.py` |
@@ -46,10 +46,10 @@ Descontos aparecem no recibo como valores **negativos**. Comparações de valor 
 | RF04 | `TwoForAmountStrategy` (`src/offers/two_for_amount.py`), corrigida no commit `fix:` da D6 | `test_comportamento_legado.py`, `test_offer_strategies.py::test_two_for_amount_strategy` | `docs/evidencias/testes/pytest_pos_fix_two_for_amount.txt`, `docs/padroes_projeto.md`, seção 7 |
 | RF05 | `FiveForAmountStrategy` (`src/offers/five_for_amount.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_five_for_amount_strategy` | `docs/evidencias/testes/` |
 | RF06 | `Receipt`, `ReceiptItem`, `tests/receipt_printer.py` | `test_comportamento_legado.py` + `tests/approved_files/` | `docs/evidencias/testes/` |
-| RF07 – RF10 | `src/combo_offer.py`, `Teller.add_combo_offer` (pendente: P4) | `test_combos.py` (ainda `xfail`) | `docs/evidencias/testes/` |
+| RF07 – RF10 | `ComboOffer` (`src/combo_offer.py`), `Teller.add_combo_offer` (D1 aplicada em `Teller.checks_out_articles_from`) | `test_combos.py::test_one_full_combo_gets_ten_percent_off`, `::test_incomplete_combo_has_no_discount`, `::test_extra_item_keeps_regular_price`, `::test_two_full_combos`, `::test_product_with_individual_offer_is_not_in_combo` | `docs/evidencias/testes/` |
 | RF11 – RF12 | `Teller.add_special_offer`, `DiscountStrategyFactory` (`src/offers/factory.py`) | `test_comportamento_legado.py`, `test_offer_strategies.py::test_factory_creates_strategy_for_each_offer_type`, `test_offer_strategies.py::test_cart_ignores_offer_with_unknown_type` | `docs/evidencias/testes/` |
 | RNF01 | API pública (D7) | `test_comportamento_legado.py` em `v0-legado` e no `main` | `docs/evidencias_testes.md` (comparativo) |
-| RNF02 | `src/discount_strategy.py`, `src/offers/` (`SingleProductOfferStrategy`), `src/combo_offer.py` (pendente: P4) | `test_combos.py` | `docs/padroes_projeto.md`, seção 6 |
+| RNF02 | `src/discount_strategy.py`, `src/offers/` (`SingleProductOfferStrategy`), `src/combo_offer.py` (`ComboOffer`) | `test_combos.py` | commit `d36e9a9` (não altera `src/offers/`), `docs/padroes_projeto.md`, seção 6 |
 | RNF03 | `scripts/security_audit.py` | — | `docs/seguranca_antes_depois.md`, `docs/evidencias/seguranca/` |
 | RNF04 | `README.md`, `requirements*.txt` | execução do zero | `README.md` |
 | RNF05 | — | `coverage` | `docs/evidencias_testes.md`, seção 5 |
