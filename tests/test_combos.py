@@ -154,3 +154,37 @@ def test_empty_combo_generates_no_discount(teller, cart, toothbrush):
     assert receipt.discounts == []
     assert receipt.total_price() == pytest.approx(0.99)
 
+
+def test_overlapping_combos_do_not_double_discount_shared_item(
+        teller, cart, toothbrush, toothpaste, rice):
+    # Com apenas 1 toothbrush, só o primeiro combo pode consumir essa unidade.
+    teller.add_combo_offer([toothbrush, toothpaste])
+    teller.add_combo_offer([toothbrush, rice])
+    cart.add_item(toothbrush)
+    cart.add_item(toothpaste)
+    cart.add_item(rice)
+
+    receipt = teller.checks_out_articles_from(cart)
+
+    assert [d.product for d in receipt.discounts] == [toothbrush, toothpaste]
+    assert total_discount(receipt) == pytest.approx(-0.278)
+    assert receipt.total_price() == pytest.approx((0.99 + 1.79 + 2.49) - 0.278)
+
+
+def test_overlapping_combos_can_both_apply_when_shared_item_has_enough_units(
+        teller, cart, toothbrush, toothpaste, rice):
+    # Com 2 toothbrush, cada combo consome 1 unidade sem sobreposição.
+    teller.add_combo_offer([toothbrush, toothpaste])
+    teller.add_combo_offer([toothbrush, rice])
+    cart.add_item_quantity(toothbrush, 2)
+    cart.add_item(toothpaste)
+    cart.add_item(rice)
+
+    receipt = teller.checks_out_articles_from(cart)
+
+    # Combo 1: -10% de (0.99 + 1.79) = -0.278 | Combo 2: -10% de (0.99 + 2.49) = -0.348
+    assert len(receipt.discounts) == 4
+    assert total_discount(receipt) == pytest.approx(-0.626)
+    assert receipt.total_price() == pytest.approx((2 * 0.99 + 1.79 + 2.49) - 0.626)
+
+

@@ -66,7 +66,7 @@ python -m pytest -v tests/test_combos.py
 python -m coverage run -m pytest && python -m coverage report
 ```
 
-Resultado esperado: **55 testes passando**, sem `xfail` (caracterização, unidade das estratégias e combos), com cobertura de 99% em `src/`.
+Resultado esperado: **57 testes passando**, sem `xfail` (caracterização, unidade das estratégias e combos), com cobertura de 99% em `src/`.
 
 Para rodar os testes de caracterização no código legado:
 
@@ -86,7 +86,7 @@ teller.add_combo_offer([toothbrush, toothpaste], percent=15.0)
 
 - **Combos completos (D2):** o número de combos é a menor quantidade inteira entre os produtos; o excedente paga preço normal. Ex.: 2 escovas + 1 creme = 1 combo.
 - **Um desconto por produto (D3):** cada produto do combo gera uma linha `combo 10% off` no recibo.
-- **Convivência com outras ofertas (D1):** produto que já tem oferta individual não entra no combo, para não haver desconto duplicado.
+- **Convivência com outras ofertas (D1):** produto que já tem oferta individual não entra no combo, e cada unidade consumida por um combo é abatida antes de avaliar os demais combos, para não haver desconto duplicado.
 - **Extensibilidade:** `ComboOffer` implementa o mesmo contrato `DiscountStrategy` e foi adicionado sem alterar nenhuma estratégia existente (RNF02).
 
 Requisitos RF07–RF10 em [docs/requisitos.md](docs/requisitos.md); testes em `tests/test_combos.py`.
@@ -146,7 +146,7 @@ Decisões que guiaram a refatoração:
 | Complexidade de `handle_offers` (radon) | 13 (C) | 5 (A) | 5 (A) | ≤ 10 (RNF06) |
 | Maior complexidade em `src/` | 13 (C) | 5 (A) | 6 (B) | ≤ 10 (RNF06) |
 | Cobertura de `src/` | 71% | 98% | 99% | ≥ 90% (RNF05) |
-| Testes passando | 1 | 44 (+ 5 `xfail`) | 55 | — |
+| Testes passando | 1 | 44 (+ 5 `xfail`) | 57 | — |
 | "2 por 0,99" com 3 unidades | 2,175 (bug) | 1,68 | 1,68 | — |
 
 ## Licença

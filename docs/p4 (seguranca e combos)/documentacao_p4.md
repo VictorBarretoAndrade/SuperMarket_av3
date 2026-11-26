@@ -66,18 +66,18 @@ Para não aceitar o filtro padrão sem verificação, foi realizada a inspeção
 - **Filtro de elegibilidade no checkout (D1):** em `Teller.checks_out_articles_from`, montar `eligible_quantities` excluindo qualquer produto presente em `self.offers`. Fazer esse filtro no checkout garante que a regra funciona independentemente da ordem em que `add_special_offer` e `add_combo_offer` foram chamados.
 - **Quantidade inteira mínima (D2):** calcular `num_combos = min(int(product_quantities.get(p, 0)) for p in self.products)`. Se algum item faltar ou tiver quantidade menor que 1, nenhum desconto é gerado; unidades ou frações excedentes permanecem com preço normal.
 - **Um `Discount` por produto (D3):** para cada produto do combo, gerar `Discount(product, description, -num_combos * unit_price * (percent / 100.0))`. Assim o total do recibo e a impressão pelo `ReceiptPrinter` funcionam sem qualquer alteração nessas classes.
-- **Proteção contra entradas de borda:** deduplicar a lista de produtos recebida (`dict.fromkeys`) e retornar lista vazia quando a lista de produtos for vazia ou `percent <= 0`.
+- **Proteção contra entradas de borda e combos sobrepostos:** deduplicar a lista de produtos recebida (`dict.fromkeys`), retornar lista vazia quando a lista de produtos for vazia ou `percent <= 0`, e abater de `eligible_quantities` as unidades consumidas por cada combo aplicado (evitando desconto duplicado quando dois combos compartilham o mesmo produto).
 
 ### O que foi alterado
-1. **`src/combo_offer.py` (criado):** classe `ComboOffer(DiscountStrategy)` implementando `calculate(product_quantities, catalog)` conforme D2, D3 e D5.
+1. **`src/combo_offer.py` (criado):** classe `ComboOffer(DiscountStrategy)` com `complete_combos(product_quantities)` e `calculate(product_quantities, catalog)` conforme D2, D3 e D5.
 2. **`src/teller.py` (alterado):**
    - adicionado `self.combo_offers = []` no `__init__`;
    - adicionado método público `add_combo_offer(self, products, percent=10.0)` (D4);
-   - em `checks_out_articles_from`, filtrado `the_cart.product_quantities` removendo itens de `self.offers` (D1) e aplicados os descontos retornados por cada `ComboOffer`.
+   - em `checks_out_articles_from`, filtrado `the_cart.product_quantities` removendo itens de `self.offers` (D1), aplicados os descontos retornados por cada `ComboOffer` e abatidas as unidades já consumidas para impedir desconto duplicado entre combos sobrepostos.
 3. **`tests/test_combos.py` (alterado):**
    - removido o marcador `pytestmark = pytest.mark.xfail(...)`;
-   - mantidos os 5 testes de aceitação originais e adicionados 6 testes extras cobrindo D3 (1 `Discount` por produto + `ReceiptPrinter`), D4 (percentual customizado), D1 com ordem inversa de cadastro, D2 com quantidade fracionária (`KILO`), combo com 3 produtos e combo vazio.
+   - mantidos os 5 testes de aceitação originais e adicionados 8 testes extras cobrindo D3 (1 `Discount` por produto + `ReceiptPrinter`), D4 (percentual customizado), D1 com ordem inversa de cadastro, D2 com quantidade fracionária (`KILO`), combo com 3 produtos, combo vazio e dois combos com produto em comum (com 1 unidade e com 2 unidades do item compartilhado).
 
 ### Resultado dos testes
-Execução de `python -m pytest -v`: **36 passed, 0 failed** (11 testes de combo em `tests/test_combos.py`, 24 testes de caracterização/aprovação da P2 em `tests/test_comportamento_legado.py` e 1 teste legado em `tests/test_supermarket.py`).
+Execução de `python -m pytest -v`: **57 passed, 0 failed** (13 testes de combo em `tests/test_combos.py`, 24 testes de caracterização/aprovação da P2 em `tests/test_comportamento_legado.py`, 19 testes unitários das estratégias da P3 em `tests/test_offer_strategies.py` e 1 teste legado em `tests/test_supermarket.py`).
 
